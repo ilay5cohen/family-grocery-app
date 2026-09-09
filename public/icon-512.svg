@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="pwaGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <filter id="pwaShadow512" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#pwaGrad512)" />
+  <circle cx="256" cy="256" r="170" fill="#ffffff" opacity="0.15" />
+  <g filter="url(#pwaShadow512)">
+    <text x="256" y="340" font-size="235" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">🛒</text>
+  </g>
+</svg>
