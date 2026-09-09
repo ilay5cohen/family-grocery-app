@@ -159,9 +159,17 @@ export function useFamilyStore(familyId: string) {
   )
 
   const performWeeklyReset = useCallback(
-    (actingMemberId?: string) => {
+    (actingMemberId?: string, options?: { onlyIfDue?: boolean }) => {
       setState((prev) => {
         const sundayMidnight = getMostRecentSundayMidnight()
+
+        // The automatic reset can fire from several devices at once just after
+        // Sunday midnight. Re-checking against the freshest state here makes it
+        // idempotent, so only the first one through actually clears the list.
+        if (options?.onlyIfDue && (prev.family.lastWeeklyReset ?? 0) >= sundayMidnight) {
+          return prev
+        }
+
         // Keep all staples AND keep any item created during the current week
         const preserved = prev.items
           .filter((item) => item.isStaple || item.createdAt >= sundayMidnight)
@@ -311,7 +319,7 @@ export function useFamilyStore(familyId: string) {
 
     if (autoResetEnabled && lastReset < sundayMidnight) {
       resetCheckDoneRef.current = true
-      performWeeklyReset()
+      performWeeklyReset(undefined, { onlyIfDue: true })
     }
   }, [state.family.id, state.family.lastWeeklyReset, state.family.autoWeeklyReset, performWeeklyReset, setState])
 

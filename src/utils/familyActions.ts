@@ -22,12 +22,20 @@ export interface AuthError {
   error: string
 }
 
+/** Long names break avatar badges and member lists, so they're capped at the source. */
+export const MAX_MEMBER_NAME_LENGTH = 24
+
+export function normalizeMemberName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ').slice(0, MAX_MEMBER_NAME_LENGTH)
+}
+
 function buildMember(name: string, index: number, isAdmin: boolean): Member {
   const profile = avatarProfileFor(index)
+  const cleanName = normalizeMemberName(name)
   return {
     id: uid(),
-    name: name.trim(),
-    avatar: initialFor(name),
+    name: cleanName,
+    avatar: initialFor(cleanName),
     color: profile.color,
     glow: profile.glow,
     isAdmin,
@@ -40,6 +48,9 @@ function activityEntry(text: string, memberId?: string): ActivityEntry {
 }
 
 export function createFamily(founderName: string): CreateFamilyResult {
+  if (!normalizeMemberName(founderName)) {
+    throw new Error('נא להזין שם.')
+  }
   const registry = readRegistry()
   const code = generateUniqueFamilyCode(registry)
   const familyId = uid()

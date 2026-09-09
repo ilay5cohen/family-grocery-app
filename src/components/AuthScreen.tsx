@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { ShoppingCart, Users, Sparkles, Copy, Check, ArrowRight, LogIn } from 'lucide-react'
 import { joinDemoFamily } from '../data/demoFamily'
-import { createFamily, joinFamily } from '../utils/familyActions'
+import { createFamily, joinFamily, MAX_MEMBER_NAME_LENGTH } from '../utils/familyActions'
 import { getSavedProfile } from '../utils/savedProfile'
-import { readFamilyState } from '../utils/familyStorage'
+import { readFamilyState, FAMILY_CODE_LENGTH } from '../utils/familyStorage'
 import type { Session } from '../types'
 import { triggerHaptic } from '../utils/haptics'
 
@@ -16,12 +16,13 @@ export function AuthScreen({
   onAuthenticated: (session: Session) => void
   notice?: string | null
 }) {
+  // The join code arrives from a shared link, so it is untrusted input —
+  // strip anything that can't be part of a code before it reaches the UI.
   const [initialJoinCode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      return (params.get('join') || params.get('code') || '').trim().toUpperCase()
-    }
-    return ''
+    if (typeof window === 'undefined') return ''
+    const params = new URLSearchParams(window.location.search)
+    const raw = params.get('join') || params.get('code') || ''
+    return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, FAMILY_CODE_LENGTH)
   })
 
   // Check for a saved profile to offer 1-tap login (Bug 2 fix)
@@ -63,10 +64,14 @@ export function AuthScreen({
       return
     }
     triggerHaptic(25)
-    const result = createFamily(name)
-    setCreatedCode(result.code)
-    setPendingSession({ familyId: result.familyId, memberId: result.memberId })
-    setMode('created')
+    try {
+      const result = createFamily(name)
+      setCreatedCode(result.code)
+      setPendingSession({ familyId: result.familyId, memberId: result.memberId })
+      setMode('created')
+    } catch {
+      setError('לא הצלחנו ליצור את המשפחה. ייתכן שאחסון הדפדפן מלא או חסום.')
+    }
   }
 
   function handleJoin() {
@@ -79,17 +84,25 @@ export function AuthScreen({
       return
     }
     triggerHaptic(25)
-    const result = joinFamily(code, name)
-    if ('error' in result) {
-      setError(result.error)
-      return
+    try {
+      const result = joinFamily(code, name)
+      if ('error' in result) {
+        setError(result.error)
+        return
+      }
+      onAuthenticated(result)
+    } catch {
+      setError('אירעה שגיאה בהצטרפות. נסו לרענן את הדף ולנסות שוב.')
     }
-    onAuthenticated(result)
   }
 
   function handleTryDemo() {
     triggerHaptic(20)
-    onAuthenticated(joinDemoFamily())
+    try {
+      onAuthenticated(joinDemoFamily())
+    } catch {
+      setError('לא הצלחנו לטעון את ההדגמה. ייתכן שאחסון הדפדפן חסום.')
+    }
   }
 
   async function copyCreatedCode() {
@@ -241,6 +254,7 @@ export function AuthScreen({
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                 placeholder="השם שלך (למשל: דניאל)"
+                maxLength={MAX_MEMBER_NAME_LENGTH}
                 autoFocus
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
               />
@@ -307,8 +321,11 @@ export function AuthScreen({
                 <input
                   type="text"
                   value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s+/g, '').slice(0, FAMILY_CODE_LENGTH))}
                   placeholder="קוד משפחה (למשל: X7K9P)"
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  autoComplete="off"
                   autoFocus={!initialJoinCode}
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm tracking-widest text-slate-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
                 />
@@ -319,6 +336,7 @@ export function AuthScreen({
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
                   placeholder="השם שלך (למשל: אמא, דני, תמר)"
+                  maxLength={MAX_MEMBER_NAME_LENGTH}
                   autoFocus={Boolean(initialJoinCode)}
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
                 />

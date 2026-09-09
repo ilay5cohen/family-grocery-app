@@ -26,7 +26,11 @@ import { useFamilyStore } from './hooks/useFamilyStore'
 import { useOnboarding } from './hooks/useOnboarding'
 import { useSession } from './hooks/useSession'
 import { saveProfile, clearSavedProfile } from './utils/savedProfile'
+import { uid } from './utils/id'
 import type { Category, Session } from './types'
+
+/** How many toasts can stack before the oldest is pushed out. */
+const MAX_VISIBLE_TOASTS = 3
 
 ensureDemoFamilySeeded()
 
@@ -90,9 +94,17 @@ function FamilyApp({
   const [activeTab, setActiveTab] = useState<ActiveTab>('cart')
   const [status, setStatus] = useState<StatusFilter>('all')
   const [category, setCategory] = useState<Category | 'all'>('all')
-  const [toast, setToast] = useState<ToastData | null>(null)
+  const [toasts, setToasts] = useState<ToastData[]>([])
 
   const me = store.members.find((m) => m.id === memberId)
+
+  function pushToast(toast: Omit<ToastData, 'id'>) {
+    setToasts((prev) => [...prev, { ...toast, id: uid() }].slice(-MAX_VISIBLE_TOASTS))
+  }
+
+  function dismissToast(id: string) {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }
 
   // Persist user profile to localStorage so the app remembers the user across sessions (Bug 2 fix)
   useEffect(() => {
@@ -119,25 +131,21 @@ function FamilyApp({
   }, [])
 
   function handleAddImportedItems(candidates: ImportCandidate[]) {
-    let count = 0
-    for (const c of candidates) {
-      store.addManualItem(
-        {
-          name: c.name,
-          quantity: c.quantity,
-          unit: c.unit,
-          category: c.category,
-          isHighProtein: c.isHighProtein,
-          estimatedPrice: c.estimatedPrice,
-        },
-        memberId,
-      )
-      count++
-    }
-    setToast({
-      id: String(Date.now()),
-      message: `נוספו בהצלחה ${count} מוצרים מהקובץ לסל! 🛒`,
-    })
+    if (candidates.length === 0) return
+    // One batched store update: adding row-by-row would trigger a separate
+    // localStorage write and cross-tab broadcast for every single line.
+    store.addItems(
+      candidates.map((c) => ({
+        name: c.name,
+        quantity: c.quantity,
+        unit: c.unit,
+        category: c.category,
+        isHighProtein: c.isHighProtein,
+        estimatedPrice: c.estimatedPrice,
+      })),
+      memberId,
+    )
+    pushToast({ message: `נוספו בהצלחה ${candidates.length} מוצרים מהקובץ לסל! 🛒` })
   }
 
   function handleAddCatalogProduct(product: CatalogProduct) {
@@ -152,10 +160,7 @@ function FamilyApp({
       },
       memberId,
     )
-    setToast({
-      id: String(Date.now()),
-      message: `"${product.name}" נוסף לסל ✓`,
-    })
+    pushToast({ message: `"${product.name}" נוסף לסל ✓` })
   }
 
   useEffect(() => {
@@ -181,18 +186,12 @@ function FamilyApp({
     const target = store.items.find((i) => i.id === id)
     store.toggleBought(id, memberId)
 
-    if (target) {
-      const willBeBought = !target.boughtBy
-      if (willBeBought) {
-        setToast({
-          id: String(Date.now()),
-          message: `"${target.name}" סומן כנקנה ✓`,
-          actionLabel: 'בטל',
-          onAction: () => {
-            store.toggleBought(id, memberId)
-          },
-        })
-      }
+    if (target && !target.boughtBy) {
+      pushToast({
+        message: `"${target.name}" סומן כנקנה ✓`,
+        actionLabel: 'בטל',
+        onAction: () => store.toggleBought(id, memberId),
+      })
     }
   }
 
@@ -201,8 +200,7 @@ function FamilyApp({
     store.deleteItem(id, memberId)
 
     if (target) {
-      setToast({
-        id: String(Date.now()),
+      pushToast({
         message: `"${target.name}" הוסר מהסל`,
         actionLabel: 'בטל מחיקה',
         onAction: () => {
@@ -214,6 +212,7 @@ function FamilyApp({
               category: target.category,
               isHighProtein: target.isHighProtein,
               estimatedPrice: target.estimatedPrice,
+              isStaple: target.isStaple,
             },
             memberId,
           )
@@ -371,10 +370,7 @@ function FamilyApp({
         onClose={() => setShowPriceComparison(false)}
         onApplyChainPrices={(chainId) => {
           store.applyChainPrices(chainId, memberId)
-          setToast({
-            id: String(Date.now()),
-            message: 'מחירי הרשת עודכנו בהצלחה בסל 🏷️',
-          })
+          pushToast({ message: 'מחירי הרשת עודכנו בהצלחה בסל 🏷️' })
         }}
       />
 
@@ -407,10 +403,7 @@ function FamilyApp({
             },
             memberId,
           )
-          setToast({
-            id: String(Date.now()),
-            message: `${quantity > 1 ? `${quantity}x ` : ''}"${product.name}" נוסף לסל ✓`,
-          })
+          pushToast({ message: `${quantity > 1 ? `${quantity}x ` : ''}"${product.name}" נוסף לסל ✓` })
           setSelectedProductForVariantPicker(null)
         }}
       />
@@ -430,7 +423,7 @@ function FamilyApp({
       />
 
       {/* Floating Undo Toast */}
-      <Toast toast={toast} onDismiss={() => setToast(null)} />
+      <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

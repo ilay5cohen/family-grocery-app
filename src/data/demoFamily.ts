@@ -30,7 +30,10 @@ export function ensureDemoFamilySeeded() {
 
 export function joinDemoFamily(): { familyId: string; memberId: string } {
   ensureDemoFamilySeeded()
-  const state = readFamilyState(DEMO_FAMILY_ID)!
-  const randomMember = state.members[Math.floor(Math.random() * state.members.length)]
+  const state = readFamilyState(DEMO_FAMILY_ID)
+  // Storage can be unavailable or hold data an older version wrote; fall back
+  // to the in-memory seed so "try the demo" never lands on a broken screen.
+  const members = state?.members?.length ? state.members : MEMBERS
+  const randomMember = members[Math.floor(Math.random() * members.length)]
   return { familyId: DEMO_FAMILY_ID, memberId: randomMember.id }
 }

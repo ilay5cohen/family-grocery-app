@@ -1,13 +1,35 @@
-import * as XLSX from 'xlsx'
-import * as pdfjsLib from 'pdfjs-dist'
 import { ISRAELI_CATALOG, type CatalogProduct } from '../data/israeliProducts'
 import { lookupItem } from '../data/itemKnowledge'
 import type { Category } from '../types'
 
-// Configure PDF.js worker
-if (typeof window !== 'undefined' && 'Worker' in window) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '3.11.174'}/pdf.worker.min.js`
+/**
+ * Excel and PDF parsing pull in ~900KB of libraries, so they are imported
+ * on demand rather than in the main bundle — most sessions never open the
+ * import dialog at all.
+ */
+async function loadXlsx() {
+  return import('xlsx')
 }
+
+let pdfWorkerConfigured = false
+async function loadPdfjs() {
+  const pdfjsLib = await import('pdfjs-dist')
+  if (!pdfWorkerConfigured) {
+    // The worker ships with the installed package and is bundled locally, so
+    // PDF import can't break when a CDN lags behind a version bump — and no
+    // third-party executable code is pulled into this origin at runtime.
+    const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
+    pdfWorkerConfigured = true
+  }
+  return pdfjsLib
+}
+
+/** Guards against a mis-picked huge file freezing the tab during parsing. */
+export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024
+
+/** The cart itself holds 250 items, so parsing more rows than this is wasted work. */
+export const MAX_IMPORT_ROWS = 300
 
 export interface ImportCandidate {
   id: string
@@ -103,8 +125,8 @@ function extractQuantityAndUnit(text: string): { quantity: number; unit: string 
   }
 
   // Clean leading/trailing punctuation and bullets
-  cleaned = cleaned.replace(/^[\s•\-\*–—\d\.\)]+/, '').trim()
-  cleaned = cleaned.replace(/[\s\-\*–—:]+$/, '').trim()
+  cleaned = cleaned.replace(/^[\s•\-*–—\d.)]+/, '').trim()
+  cleaned = cleaned.replace(/[\s\-*–—:]+$/, '').trim()
 
   return { quantity, unit, cleanName: cleaned }
 }
@@ -162,6 +184,7 @@ function matchToCatalog(rawName: string, explicitQuantity?: number, explicitUnit
  * Parses an Excel (.xlsx, .xls) or CSV file
  */
 export async function parseExcelFile(file: File): Promise<ImportCandidate[]> {
+  const XLSX = await loadXlsx()
   const buffer = await file.arrayBuffer()
   const workbook = XLSX.read(buffer, { type: 'array' })
   const firstSheetName = workbook.SheetNames[0]
@@ -205,7 +228,7 @@ export async function parseExcelFile(file: File): Promise<ImportCandidate[]> {
   const candidates: ImportCandidate[] = []
   const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0
 
-  for (let r = startRow; r < rows.length; r++) {
+  for (let r = startRow; r < rows.length && candidates.length < MAX_IMPORT_ROWS; r++) {
     const row = rows[r]
     if (!row || !Array.isArray(row) || row.length === 0) continue
 
@@ -251,8 +274,14 @@ export async function parseExcelFile(file: File): Promise<ImportCandidate[]> {
  * Parses a PDF file using PDF.js
  */
 export async function parsePdfFile(file: File): Promise<ImportCandidate[]> {
+  const pdfjsLib = await loadPdfjs()
   const buffer = await file.arrayBuffer()
-  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
+  // Imported PDFs are untrusted input, so eval-based font handling stays off.
+  const loadingTask = pdfjsLib.getDocument({
+    data: new Uint8Array(buffer),
+    isEvalSupported: false,
+    disableAutoFetch: true,
+  })
   const pdfDoc = await loadingTask.promise
 
   if (pdfDoc.numPages === 0) {
@@ -288,6 +317,7 @@ export async function parsePdfFile(file: File): Promise<ImportCandidate[]> {
   const candidates: ImportCandidate[] = []
 
   for (const line of rawLines) {
+    if (candidates.length >= MAX_IMPORT_ROWS) break
     const trimmed = line.trim()
     if (trimmed.length < 2) continue
     if (IGNORED_PDF_PATTERNS.some((pattern) => pattern.test(trimmed))) continue
@@ -312,6 +342,14 @@ export async function parsePdfFile(file: File): Promise<ImportCandidate[]> {
  * Universal file entry point for Excel and PDF
  */
 export async function parseImportFile(file: File): Promise<ImportCandidate[]> {
+  if (file.size === 0) {
+    throw new Error('הקובץ ריק. אנא בחר/י קובץ אחר.')
+  }
+  if (file.size > MAX_IMPORT_FILE_BYTES) {
+    const limitMb = Math.round(MAX_IMPORT_FILE_BYTES / (1024 * 1024))
+    throw new Error(`הקובץ גדול מדי (מעל ${limitMb}MB). נסו קובץ קטן יותר או פצלו אותו.`)
+  }
+
   const lowerName = file.name.toLowerCase()
 
   if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls') || lowerName.endsWith('.csv')) {

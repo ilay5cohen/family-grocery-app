@@ -1,20 +1,25 @@
 // Service Worker for "הסל שלנו" PWA
-const CACHE_NAME = 'hasal-shelanu-v1'
+const CACHE_NAME = 'hasal-shelanu-v2'
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/favicon.svg',
-  '/icon-192.svg',
-  '/icon-512.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
 ]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then((cache) =>
+        // Cached one by one on purpose: with addAll(), a single missing asset
+        // fails the whole install and the service worker never activates.
+        Promise.all(PRECACHE_ASSETS.map((asset) => cache.add(asset).catch(() => undefined)))
+      )
       .then(() => self.skipWaiting())
   )
 })

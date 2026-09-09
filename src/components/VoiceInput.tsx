@@ -48,6 +48,14 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
 
+  // The recognition engine is created once and must survive re-renders: this
+  // app re-renders whenever another family member changes the list, and
+  // rebuilding the engine mid-sentence would abort listening silently.
+  const onTranscriptRef = useRef(onTranscript)
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript
+  }, [onTranscript])
+
   useEffect(() => {
     const SpeechConstructor = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechConstructor) {
@@ -82,7 +90,7 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
         const text = event.results[0]?.[0]?.transcript?.trim()
         if (text) {
           triggerHaptic([20, 50, 20])
-          onTranscript(text)
+          onTranscriptRef.current(text)
         }
       }
 
@@ -93,8 +101,9 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
 
     return () => {
       recognitionRef.current?.abort()
+      recognitionRef.current = null
     }
-  }, [onTranscript])
+  }, [])
 
   function toggleListening() {
     if (!recognitionRef.current) return
