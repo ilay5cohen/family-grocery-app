@@ -12,8 +12,6 @@ import { StatsBar } from './components/StatsBar'
 import { FamilyTab } from './components/FamilyTab'
 import { SupermarketMode } from './components/SupermarketMode'
 import { PriceComparisonModal } from './components/PriceComparisonModal'
-import { PriceComparisonTeaser } from './components/PriceComparisonTeaser'
-import { ProductLibraryBanner } from './components/ProductLibraryBanner'
 import { ProductLibraryModal } from './components/ProductLibraryModal'
 import { ProductVariantPickerModal } from './components/ProductVariantPickerModal'
 import { FileImportModal } from './components/FileImportModal'
@@ -145,7 +143,7 @@ function FamilyApp({
       })),
       memberId,
     )
-    pushToast({ message: `נוספו בהצלחה ${candidates.length} מוצרים מהקובץ לסל! 🛒` })
+    pushToast({ message: `נוספו בהצלחה ${candidates.length} פריטים מהקובץ לסל`, type: 'success' })
   }
 
   function handleAddCatalogProduct(product: CatalogProduct) {
@@ -160,7 +158,7 @@ function FamilyApp({
       },
       memberId,
     )
-    pushToast({ message: `"${product.name}" נוסף לסל ✓` })
+    pushToast({ message: `"${product.name}" נוסף לסל ✓`, type: 'success' })
   }
 
   useEffect(() => {
@@ -191,6 +189,7 @@ function FamilyApp({
         message: `"${target.name}" סומן כנקנה ✓`,
         actionLabel: 'בטל',
         onAction: () => store.toggleBought(id, memberId),
+        type: 'info',
       })
     }
   }
@@ -203,6 +202,7 @@ function FamilyApp({
       pushToast({
         message: `"${target.name}" הוסר מהסל`,
         actionLabel: 'בטל מחיקה',
+        type: 'info',
         onAction: () => {
           store.addManualItem(
             {
@@ -223,14 +223,14 @@ function FamilyApp({
 
   if (!me) {
     return (
-      <div dir="rtl" className="flex min-h-screen items-center justify-center bg-[#f7f9f6] text-slate-500 font-bold">
+      <div dir="rtl" className="flex min-h-screen items-center justify-center bg-[#faf9f6] text-stone-500 font-medium">
         טוען את הסל המשפחתי...
       </div>
     )
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f7f9f6] text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-900 pb-16">
+    <div dir="rtl" className="min-h-screen bg-[#faf9f6] text-stone-800 antialiased selection:bg-stone-200 selection:text-stone-900 pb-24">
       {/* Onboarding */}
       {showOnboarding && (
         <OnboardingModal
@@ -277,7 +277,7 @@ function FamilyApp({
       />
 
       {/* Main Content Area - Centered & Clean Mobile Padding */}
-      <div className="mx-auto max-w-2xl px-3 py-3 sm:px-6 sm:py-4 space-y-3 sm:space-y-4">
+      <div className="mx-auto max-w-2xl px-3 py-3 sm:px-6 sm:py-4 space-y-3 sm:space-y-4 pb-20">
         {/* Navigation Tabs Bar */}
         <NavigationTabs
           activeTab={activeTab}
@@ -286,17 +286,13 @@ function FamilyApp({
           pendingCount={store.stats.pendingCount}
         />
 
-        {/* TAB 1: CART (רשימת הקניות הראשית) */}
+        {/* TAB 1: CART (רשימת הקניות הראשית - Content First) */}
         {activeTab === 'cart' && (
           <main className="space-y-3 animate-float-in">
+            {/* Collapsible Micro Status Strip */}
             <StatsBar stats={store.stats} />
 
-            {/* Israeli Supermarket Price Comparison Teaser */}
-            <PriceComparisonTeaser
-              items={store.items}
-              onOpenModal={() => setShowPriceComparison(true)}
-            />
-
+            {/* Smart Add Bar with Voice & File Import */}
             <SmartAddBar
               onConfirm={(items) => store.addItems(items, memberId)}
               onManualAdd={(item) => store.addManualItem(item, memberId)}
@@ -305,25 +301,22 @@ function FamilyApp({
               onOpenFileImport={() => setShowFileImport(true)}
             />
 
+            {/* Sticky Filters & Quick Action Tools */}
             <FilterBar
               status={status}
               onStatusChange={setStatus}
               category={category}
               onCategoryChange={setCategory}
+              onOpenPriceComparison={() => setShowPriceComparison(true)}
+              onOpenProductLibrary={() => setShowProductLibrary(true)}
             />
 
-            {/* Israeli Products Library Banner */}
-            <ProductLibraryBanner
-              currentItems={store.items}
-              onOpenLibrary={() => setShowProductLibrary(true)}
-              onAddProduct={handleAddCatalogProduct}
-              onSelectProduct={(product) => setSelectedProductForVariantPicker(product)}
-            />
-
+            {/* Grocery Items List - Prominent & Uncluttered */}
             <ItemList
               items={filteredItems}
               members={store.members}
               canAssign={me.isAdmin}
+              status={status}
               onToggle={handleToggleItem}
               onToggleStaple={(id) => store.toggleStaple(id, memberId)}
               onAssign={(id, targetMemberId) => store.assignMember(id, targetMemberId, memberId)}
@@ -358,8 +351,8 @@ function FamilyApp({
         )}
 
         {/* Footer note */}
-        <footer className="pt-6 text-center text-xs font-medium text-slate-400">
-          נבנה באהבה 🌿 עבור המשפחה · מסונכרן בזמן אמת ב-₪0
+        <footer className="pt-8 pb-4 text-center text-[11px] font-normal text-stone-400">
+          הסל שלנו · רשימת קניות משפחתית מסונכרנת
         </footer>
       </div>
 
@@ -370,7 +363,7 @@ function FamilyApp({
         onClose={() => setShowPriceComparison(false)}
         onApplyChainPrices={(chainId) => {
           store.applyChainPrices(chainId, memberId)
-          pushToast({ message: 'מחירי הרשת עודכנו בהצלחה בסל 🏷️' })
+          pushToast({ message: 'מחירי הרשת עודכנו בהצלחה', type: 'success' })
         }}
       />
 
@@ -403,7 +396,7 @@ function FamilyApp({
             },
             memberId,
           )
-          pushToast({ message: `${quantity > 1 ? `${quantity}x ` : ''}"${product.name}" נוסף לסל ✓` })
+          pushToast({ message: `${quantity > 1 ? `${quantity}x ` : ''}"${product.name}" נוסף לסל ✓`, type: 'success' })
           setSelectedProductForVariantPicker(null)
         }}
       />

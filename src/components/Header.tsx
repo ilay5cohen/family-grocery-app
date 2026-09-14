@@ -1,7 +1,8 @@
-import { ShoppingCart, HelpCircle, Share2, Smartphone } from 'lucide-react'
+import { ShoppingCart, Smartphone } from 'lucide-react'
 import type { Member } from '../types'
 import { UserMenu } from './UserMenu'
 import { triggerHaptic } from '../utils/haptics'
+import { isCloudSyncConfigured } from '../services/supabase'
 
 export function Header({
   me,
@@ -24,7 +25,7 @@ export function Header({
     triggerHaptic(20)
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : ''
     const inviteUrl = `${currentOrigin}?join=${familyCode}`
-    const text = `היי! מוזמן/ת להצטרף לסל הקניות המשפחתי שלנו ב"הסל שלנו" 🛒:\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
+    const text = `היי! מוזמן/ת להצטרף לרשימת הקניות המשפחתית שלנו ב"הסל שלנו":\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`
 
     if (typeof window !== 'undefined') {
@@ -33,10 +34,10 @@ export function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 shadow-xs backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-black/[0.04] bg-white/80 shadow-[0_1px_3px_rgba(0,0,0,0.02)] backdrop-blur-xl transition-all">
       <div className="mx-auto flex max-w-2xl items-center justify-between px-3.5 py-2.5 sm:px-6 sm:py-3">
         {/* Right side (RTL Start): User Menu */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <UserMenu
             me={me}
             familyCode={familyCode}
@@ -50,41 +51,22 @@ export function Header({
 
         {/* Center: Centered App Brand & Pulse Indicator */}
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex items-center gap-1.5">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xs">
-              <ShoppingCart className="h-4 w-4 text-white stroke-[2.5]" />
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-stone-900 text-white shadow-xs">
+              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.2]" />
             </div>
-            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-stone-900">
               הסל שלנו
             </h1>
           </div>
-          <div className="flex items-center justify-center gap-1 text-[10px] font-semibold text-emerald-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-glow" />
-            <span>מסונכרן בזמן אמת</span>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-stone-500 mt-0.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{isCloudSyncConfigured ? 'מסונכרן בענן' : 'מסונכרן בזמן אמת'}</span>
           </div>
         </div>
 
-        {/* Left side (RTL End): Action Button */}
-        <div className="flex items-center gap-1.5">
-          {/* Desktop-only secondary buttons */}
-          <button
-            onClick={handleShareWhatsApp}
-            title="הזמן משפחה בוואטסאפ"
-            aria-label="הזמן משפחה בוואטסאפ"
-            className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100 active:scale-95"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-          </button>
-
-          <button
-            onClick={onHelp}
-            aria-label="הסבר על האפליקציה"
-            title="הסבר על האפליקציה"
-            className="hidden md:flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition hover:bg-slate-100 active:scale-95"
-          >
-            <HelpCircle className="h-3.5 w-3.5" />
-          </button>
-
+        {/* Left side (RTL End): Action Buttons */}
+        <div className="flex items-center gap-2">
           {/* Install PWA Button */}
           {onInstallPwa && (
             <button
@@ -92,12 +74,12 @@ export function Header({
                 triggerHaptic(20)
                 onInstallPwa()
               }}
-              title="התקן למסך הבית"
-              className="flex items-center gap-1 sm:gap-1.5 rounded-xl sm:rounded-2xl border border-emerald-300/80 bg-emerald-50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition active:scale-95 shadow-2xs"
+              title="התקנת האפליקציה למסך הבית"
+              aria-label="התקנת האפליקציה למסך הבית"
+              className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-stone-200/80 bg-stone-100/80 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-stone-700 hover:bg-stone-200/70 transition active:scale-95 shadow-2xs"
             >
               <Smartphone className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">התקן אפליקציה</span>
-              <span className="sm:hidden">התקן</span>
+              <span className="hidden sm:inline">התקנה</span>
             </button>
           )}
 
@@ -107,11 +89,12 @@ export function Header({
               triggerHaptic(25)
               onOpenSupermarketMode()
             }}
-            className="flex items-center gap-1 sm:gap-1.5 rounded-xl sm:rounded-2xl bg-emerald-600 px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-xs font-black text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
+            title="כניסה למצב סופרמרקט"
+            aria-label="כניסה למצב סופרמרקט"
+            className="flex items-center gap-1.5 rounded-xl bg-stone-900 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-white shadow-apple-subtle transition hover:bg-black active:scale-95"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">מצב סופר</span>
-            <span className="sm:hidden">סופר</span>
+            <span>מצב קניות</span>
           </button>
         </div>
       </div>

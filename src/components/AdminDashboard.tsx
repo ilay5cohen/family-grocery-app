@@ -63,8 +63,9 @@ export function AdminDashboard({
   function handleShareWhatsApp() {
     triggerHaptic(20)
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-    const inviteUrl = `${currentOrigin}?join=${familyCode}`
-    const text = `היי! מוזמן/ת להצטרף לסל הקניות המשפחתי שלנו ב"הסל שלנו" 🛒:\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
+    const founder = members.find((m) => m.isAdmin) || members[0]
+    const inviteUrl = `${currentOrigin}?join=${familyCode}&fn=${encodeURIComponent(founder?.name || '')}`
+    const text = `היי! מוזמן/ת להצטרף לסל הקניות המשפחתי שלנו ב"הסל שלנו":\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`
 
     if (typeof window !== 'undefined') {

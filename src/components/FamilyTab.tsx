@@ -59,8 +59,9 @@ export function FamilyTab({
   function handleShareWhatsApp() {
     triggerHaptic(20)
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-    const inviteUrl = `${currentOrigin}?join=${familyCode}`
-    const text = `היי! מוזמן/ת להצטרף לסל הקניות המשפחתי שלנו ב"הסל שלנו" 🛒:\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
+    const founder = members.find((m) => m.isAdmin) || members[0]
+    const inviteUrl = `${currentOrigin}?join=${familyCode}&fn=${encodeURIComponent(founder?.name || '')}`
+    const text = `היי! מוזמן/ת להצטרף לסל הקניות המשפחתי שלנו ב"הסל שלנו":\n${inviteUrl}\n(קוד המשפחה: ${familyCode})`
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`
     if (typeof window !== 'undefined') {
       window.open(waUrl, '_blank')
@@ -68,50 +69,50 @@ export function FamilyTab({
   }
 
   return (
-    <div className="animate-float-in space-y-5">
+    <div className="space-y-5">
       {/* WhatsApp Invite Card */}
-      <section className="rounded-3xl border border-emerald-200/80 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-4">
+      <section className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-apple space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-              <Share2 className="h-4 w-4" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-100 text-stone-800 shadow-apple-subtle">
+              <Share2 className="h-4 w-4 stroke-[1.75]" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900">הזמנת בני משפחה</h3>
-              <p className="text-xs text-slate-500">שתפו את הקישור לסנכרון מיידי בין כל המכשירים</p>
+              <h3 className="text-sm font-semibold text-stone-900">הזמנת בני משפחה</h3>
+              <p className="text-xs text-stone-500">שתפו את הקישור לסנכרון מיידי בין כל המכשירים</p>
             </div>
           </div>
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+            className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition shadow-apple-subtle"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? <Check className="h-3.5 w-3.5 text-stone-900" /> : <Copy className="h-3.5 w-3.5 text-stone-400" />}
             <span>{copied ? 'קוד הועתק' : familyCode}</span>
           </button>
         </div>
 
         <button
           onClick={handleShareWhatsApp}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-emerald-600 to-teal-600 py-3 text-xs font-black text-white shadow-[0_2px_10px_rgba(5,150,105,0.25)] transition hover:brightness-105 active:scale-98"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 py-3 text-xs font-medium text-white shadow-apple-subtle transition hover:bg-stone-800 active:scale-98"
         >
           <Share2 className="h-4 w-4" />
-          <span>שלח הזמנה בוואטסאפ (הצטרפות בלחיצה אחת)</span>
+          <span>שליחת הזמנה בוואטסאפ (הצטרפות בלחיצה)</span>
         </button>
       </section>
 
       {/* Members & Admin */}
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-3">
+      <section className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-apple space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-sm font-black text-slate-900">
-            <Users className="h-4 w-4 text-emerald-600" />
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+            <Users className="h-4 w-4 text-stone-700 stroke-[1.75]" />
             <span>בני המשפחה בסל ({members.length})</span>
           </h3>
 
           {me?.isAdmin && (
             <button
               onClick={onOpenAdmin}
-              className="flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800"
+              className="flex items-center gap-1 text-xs font-medium text-stone-600 hover:text-stone-900"
             >
               <Crown className="h-3.5 w-3.5" />
               <span>ניהול הרשאות</span>
@@ -123,22 +124,22 @@ export function FamilyTab({
           {members.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-xs"
+              className="flex items-center justify-between rounded-2xl border border-stone-200/60 bg-stone-50/60 p-3 text-xs"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <Avatar member={member} size="md" />
                 <div>
-                  <p className="font-bold text-slate-900 truncate">
+                  <p className="font-semibold text-stone-900 truncate">
                     {member.name} {member.id === currentMemberId && '(אני)'}
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-stone-500">
                     הצטרף/ה {formatRelativeTime(member.joinedAt)}
                   </p>
                 </div>
               </div>
 
               {member.isAdmin && (
-                <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
+                <span className="flex items-center gap-1 rounded-full bg-stone-100 border border-stone-200 px-2 py-0.5 text-[10px] font-medium text-stone-700">
                   <Crown className="h-3 w-3" /> מנהל/ת
                 </span>
               )}
@@ -148,29 +149,29 @@ export function FamilyTab({
       </section>
 
       {/* Weekly Auto-Reset Card */}
-      <section className="rounded-3xl border border-amber-200/90 bg-gradient-to-l from-amber-500/10 to-orange-500/5 p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] space-y-3">
+      <section className="rounded-3xl border border-stone-200/80 bg-stone-50/70 p-5 shadow-apple-subtle space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
-              <RotateCcw className="h-4 w-4" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-100 text-stone-800 shadow-apple-subtle">
+              <RotateCcw className="h-4 w-4 stroke-[1.75]" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-                <span>איפוס שבועי חכם</span>
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                  פעיל בכל יום ראשון
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                <span>איפוס שבועי</span>
+                <span className="rounded-full bg-stone-200/70 px-2 py-0.5 text-[10px] font-medium text-stone-700">
+                  כל יום ראשון
                 </span>
               </h3>
-              <p className="text-xs text-slate-600">
-                בכל יום ראשון, כל המוצרים שלא סומנו כ"קבועים" (⭐) נמחקים אוטומטית.
+              <p className="text-xs text-stone-500">
+                בימי ראשון, מוצרים שאינם קבועים מוסרים מהרשימה אוטומטית.
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+          <span className="text-xs font-normal text-stone-600 flex items-center gap-1.5">
+            <Star className="h-3.5 w-3.5 text-stone-700" />
             <span>נשמרים בסל: {stats.staplesCount} מוצרים קבועים</span>
           </span>
 
@@ -185,69 +186,69 @@ export function FamilyTab({
                 setTimeout(() => setConfirmingReset(false), 3500)
               }
             }}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition active:scale-95 ${
+            className={`rounded-xl px-3 py-1.5 text-xs font-medium transition active:scale-95 ${
               confirmingReset
-                ? 'bg-rose-600 text-white shadow-sm animate-pulse'
-                : 'border border-amber-300 bg-white text-amber-900 hover:bg-amber-50'
+                ? 'bg-stone-900 text-white shadow-apple-subtle'
+                : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
             }`}
           >
-            {confirmingReset ? 'בטוח? לחץ לאיפוס לשבוע חדש' : 'אפס לשבוע חדש עכשיו'}
+            {confirmingReset ? 'אישור איפוס לשבוע חדש' : 'איפוס ידני עכשיו'}
           </button>
         </div>
       </section>
 
       {/* Expenses Overview */}
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-3">
-        <h3 className="flex items-center gap-2 text-sm font-black text-slate-900">
-          <TrendingUp className="h-4 w-4 text-emerald-600" />
+      <section className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-apple space-y-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+          <TrendingUp className="h-4 w-4 text-stone-700 stroke-[1.75]" />
           <span>סיכום הוצאות ותקציב סל</span>
         </h3>
 
-        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
-            <p className="text-[11px] font-medium text-slate-500">משוער לסל</p>
-            <p className="mt-1 text-base font-black text-slate-900">{formatCurrency(stats.estimatedTotal)}</p>
+        <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
+          <div className="rounded-2xl border border-stone-200/60 bg-stone-50/70 p-3 shadow-apple-subtle">
+            <p className="text-[11px] font-normal text-stone-500">משוער לסל</p>
+            <p className="mt-1 text-sm sm:text-base font-semibold text-stone-900">{formatCurrency(stats.estimatedTotal)}</p>
           </div>
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3">
-            <p className="text-[11px] font-medium text-emerald-800">כבר נקנה</p>
-            <p className="mt-1 text-base font-black text-emerald-700">{formatCurrency(stats.spentTotal)}</p>
+          <div className="rounded-2xl border border-stone-200/60 bg-stone-50/70 p-3 shadow-apple-subtle">
+            <p className="text-[11px] font-normal text-stone-500">כבר נקנה</p>
+            <p className="mt-1 text-sm sm:text-base font-semibold text-stone-900">{formatCurrency(stats.spentTotal)}</p>
           </div>
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-3">
-            <p className="text-[11px] font-medium text-amber-800">נותר בקופה</p>
-            <p className="mt-1 text-base font-black text-amber-700">{formatCurrency(stats.remainingEstimate)}</p>
+          <div className="rounded-2xl border border-stone-200/60 bg-stone-50/70 p-3 shadow-apple-subtle">
+            <p className="text-[11px] font-normal text-stone-500">נותר לרכישה</p>
+            <p className="mt-1 text-sm sm:text-base font-semibold text-stone-900">{formatCurrency(stats.remainingEstimate)}</p>
           </div>
         </div>
       </section>
 
       {/* Activity Log */}
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-3">
-        <h3 className="flex items-center gap-2 text-sm font-black text-slate-900">
-          <History className="h-4 w-4 text-emerald-600" />
-          <span>יומן פעילות אחרונה</span>
+      <section className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-apple space-y-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+          <History className="h-4 w-4 text-stone-700 stroke-[1.75]" />
+          <span>פעילות אחרונה בסל</span>
         </h3>
 
         <div className="max-h-60 overflow-y-auto space-y-2 pe-1">
           {activity.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">טרם בוצעו פעולות בסל.</p>
+            <p className="py-4 text-center text-xs text-stone-400">אין פעילויות עדיין.</p>
           ) : (
             activity.map((entry) => {
               const actor = members.find((m) => m.id === entry.memberId)
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-xs"
+                  className="flex items-center justify-between rounded-xl border border-stone-200/60 bg-stone-50/50 px-3 py-2 text-xs"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     {actor ? (
                       <Avatar member={actor} size="sm" />
                     ) : (
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[10px] text-slate-600 font-bold">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-stone-200 text-[10px] text-stone-600 font-medium">
                         ?
                       </span>
                     )}
-                    <span className="truncate text-slate-700 font-semibold">{entry.text}</span>
+                    <span className="truncate text-stone-700 font-normal">{entry.text}</span>
                   </div>
-                  <span className="shrink-0 text-[10px] text-slate-400">
+                  <span className="shrink-0 text-[10px] text-stone-400">
                     {formatRelativeTime(entry.createdAt)}
                   </span>
                 </div>

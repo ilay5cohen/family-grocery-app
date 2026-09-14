@@ -7,6 +7,13 @@ import { useSharedState } from './useSharedState'
 import { SUPERMARKET_CHAINS } from '../data/chains'
 import { getItemPriceForChain } from '../utils/priceComparison'
 
+import {
+  pullFamilyState,
+  pushFamilyState,
+  subscribeToFamilySync,
+} from '../services/cloudSync'
+import { mergeStoreStates } from '../utils/stateMerge'
+
 function pushActivity(activity: ActivityEntry[], text: string, memberId?: string): ActivityEntry[] {
   const entry: ActivityEntry = { id: uid(), text, memberId, createdAt: Date.now() }
   return [entry, ...activity].slice(0, 35) // Keep last 35 entries
@@ -37,6 +44,43 @@ function getMostRecentSundayMidnight(): number {
 export function useFamilyStore(familyId: string) {
   const [state, setState] = useSharedState<StoreState>(familyStateKey(familyId), emptyState(familyId))
   const resetCheckDoneRef = useRef(false)
+  const lastPushedRef = useRef<string>('')
+
+  const familyCode = state.family?.code
+
+  // Multi-Device Cloud Sync: Initial pull and real-time subscription
+  useEffect(() => {
+    if (!familyId || !familyCode) return
+
+    pullFamilyState(familyId, familyCode).then((cloudState) => {
+      if (cloudState && cloudState.family?.id === familyId) {
+        setState((prev) => mergeStoreStates(prev, cloudState))
+      }
+    })
+
+    const unsubscribe = subscribeToFamilySync(familyId, familyCode, (remoteState) => {
+      if (remoteState && remoteState.family?.id === familyId) {
+        setState((prev) => mergeStoreStates(prev, remoteState))
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [familyId, familyCode, setState])
+
+  // Sync state changes to Cloud (Supabase + Relay)
+  useEffect(() => {
+    if (!familyCode) return
+    const serialized = JSON.stringify(state)
+    if (serialized === lastPushedRef.current) return
+    lastPushedRef.current = serialized
+
+    const timer = setTimeout(() => {
+      pushFamilyState(familyId, familyCode, state)
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [state, familyId, familyCode])
 
   const memberName = useCallback(
     (id?: string) => state.members.find((m) => m.id === id)?.name ?? 'מישהו',

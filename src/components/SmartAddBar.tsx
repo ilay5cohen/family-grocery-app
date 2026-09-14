@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Sparkles, Plus, Loader2, Check, X, SlidersHorizontal, FileSpreadsheet } from 'lucide-react'
-import { CATEGORIES } from '../data/categories'
+import { Plus, Loader2, Check, X, SlidersHorizontal, FileSpreadsheet } from 'lucide-react'
 import { parseGroceryText, type ParsedItem } from '../utils/aiParse'
 import { formatCurrency } from '../utils/format'
 import { ManualAddForm } from './ManualAddForm'
@@ -69,18 +68,18 @@ export function SmartAddBar({
   return (
     <div className="animate-float-in space-y-3">
       {/* Clean White Smart Input Bar */}
-      <div className="relative rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
+      <div className="relative rounded-2xl border border-black/[0.05] bg-white p-1.5 shadow-apple transition-all focus-within:border-stone-400 focus-within:ring-4 focus-within:ring-black/[0.02]">
         <div className="flex items-center gap-2">
-          <div className="ps-2 text-emerald-600">
-            <Sparkles className="h-5 w-5" />
+          <div className="ps-2 text-stone-400">
+            <Plus className="h-4 w-4" />
           </div>
 
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleParse()}
-            placeholder='חפש מוצר (לדוג׳ קוטג, חלב, 250 גרם) או רשום: "ביצים, לחם"'
-            className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none"
+            placeholder='הוסף מוצר לסל (למשל: חלב, לחם, 2 קוטג׳)...'
+            className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none"
           />
 
           {/* Voice Input Microphone */}
@@ -89,15 +88,15 @@ export function SmartAddBar({
           <button
             onClick={() => handleParse()}
             disabled={!text.trim() || thinking}
-            className="me-1 flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(5,150,105,0.25)] transition hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            className="me-1 flex shrink-0 items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2.5 text-xs font-semibold text-white shadow-apple-subtle transition hover:bg-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
           >
             {thinking ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>מנתח...</span>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>מעבד...</span>
               </>
             ) : (
-              <span>זיהוי חכם</span>
+              <span>הוספה</span>
             )}
           </button>
         </div>
@@ -105,18 +104,17 @@ export function SmartAddBar({
 
       {/* Live Supermarket Catalog Search Matches */}
       {liveCatalogMatches.length > 0 && !preview && !thinking && (
-        <div className="rounded-2xl border border-sky-200/90 bg-white p-3 shadow-md animate-float-in space-y-2">
+        <div className="rounded-2xl border border-black/[0.05] bg-white p-3.5 shadow-apple animate-float-in space-y-2">
           <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-black text-sky-950 flex items-center gap-1.5">
-              <span>🇮🇱</span>
-              <span>מוצרים תואמים מהסופר — לחצו לבחירת סוג, כמות גרם וכמות:</span>
+            <span className="text-[12px] font-semibold text-stone-800">
+              מוצרים תואמים מהקטלוג:
             </span>
             {onOpenProductLibrary && (
               <button
                 onClick={onOpenProductLibrary}
-                className="text-[11px] font-bold text-sky-600 hover:text-sky-800 underline"
+                className="text-[11px] font-medium text-stone-500 hover:text-stone-800 underline underline-offset-2"
               >
-                כל המוצרים בספרייה
+                לכל הקטלוג
               </button>
             )}
           </div>
@@ -132,10 +130,10 @@ export function SmartAddBar({
                     setText('')
                   }
                 }}
-                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 p-2 hover:bg-sky-50 hover:border-sky-200 transition-all cursor-pointer group"
+                className="flex items-center justify-between rounded-xl border border-stone-100 bg-stone-50/50 p-2 hover:bg-stone-100/70 hover:border-stone-200 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/70 flex items-center justify-center">
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-stone-100 border border-stone-200/60 flex items-center justify-center">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -148,31 +146,28 @@ export function SmartAddBar({
                         }}
                       />
                     ) : null}
-                    <span className={`${product.imageUrl ? 'fb-emoji hidden' : ''} text-xl select-none`}>
-                      {product.emoji}
-                    </span>
                   </div>
 
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="rounded-md bg-white border border-slate-200 px-1.5 py-0.2 text-[9px] font-bold text-slate-700">
+                      <span className="rounded bg-white border border-stone-200/80 px-1.5 py-0.2 text-[9px] font-medium text-stone-600">
                         {product.brand}
                       </span>
-                      <span className="text-xs font-bold text-slate-800 group-hover:text-sky-700 transition-colors">
+                      <span className="text-xs font-semibold text-stone-800 group-hover:text-black transition-colors">
                         {product.name}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
-                      <span className="font-semibold text-slate-700">משקל/גודל: {product.size}</span>
+                    <div className="flex items-center gap-2 text-[11px] text-stone-500 mt-0.5">
+                      <span>{product.size}</span>
                       <span>·</span>
-                      <span className="font-black text-slate-900">{formatCurrency(product.price)}</span>
+                      <span className="font-semibold text-stone-900">{formatCurrency(product.price)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 rounded-xl bg-sky-600 px-3 py-1.5 text-[11px] font-black text-white shadow-2xs group-hover:bg-sky-700 active:scale-95 transition-all shrink-0">
+                <div className="flex items-center gap-1 rounded-lg bg-stone-900 px-2.5 py-1 text-[11px] font-medium text-white group-hover:bg-black active:scale-95 transition-all shrink-0">
                   <SlidersHorizontal className="h-3 w-3" />
-                  <span>בחר סוג וכמות</span>
+                  <span>בחירה</span>
                 </div>
               </div>
             ))}
@@ -184,7 +179,7 @@ export function SmartAddBar({
       <div className="flex items-center justify-center gap-3">
         <button
           onClick={() => setShowManual((s) => !s)}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-500 underline decoration-dotted underline-offset-4 transition hover:text-emerald-700"
+          className="flex items-center gap-1 text-xs font-medium text-stone-500 underline underline-offset-4 transition hover:text-stone-900"
         >
           <Plus className="h-3.5 w-3.5" />
           {showManual ? 'סגירת הוספה ידנית' : 'הוספה ידנית'}
@@ -192,16 +187,16 @@ export function SmartAddBar({
 
         {onOpenFileImport && (
           <>
-            <span className="text-slate-300">·</span>
+            <span className="text-stone-300">·</span>
             <button
               onClick={() => {
                 triggerHaptic(20)
                 onOpenFileImport()
               }}
-              className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/90 px-2.5 py-1 rounded-xl transition active:scale-95 shadow-2xs"
+              className="flex items-center gap-1.5 text-xs font-medium text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/80 px-2.5 py-1 rounded-xl transition active:scale-95 shadow-2xs"
             >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
-              <span>ייבוא מקובץ (אקסל / PDF)</span>
+              <FileSpreadsheet className="h-3.5 w-3.5 text-stone-500" />
+              <span>ייבוא מקובץ</span>
             </button>
           </>
         )}
@@ -218,60 +213,59 @@ export function SmartAddBar({
 
       {/* Thinking state */}
       {thinking && (
-        <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/60 px-4 py-3 text-xs font-semibold text-emerald-800">
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-          ה-AI מזהה פריטים, כמויות ומחירים משוערים...
+        <div className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-xs font-medium text-stone-700">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-stone-700 border-t-transparent" />
+          מעבד פריטים וכמויות...
         </div>
       )}
 
       {/* Preview items detected */}
       {preview && preview.length > 0 && (
-        <div className="animate-float-in space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+        <div className="animate-float-in space-y-3 rounded-2xl border border-black/[0.05] bg-white shadow-apple p-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-emerald-900">
-              זוהו {preview.length} פריטים — אשרו להוספה לסל:
+            <p className="text-xs font-semibold text-stone-900">
+              זוהו {preview.length} פריטים לאישור:
             </p>
             <button
               onClick={() => setPreview(null)}
-              className="text-[11px] font-semibold text-slate-500 hover:text-slate-800"
+              className="text-[11px] font-medium text-stone-400 hover:text-stone-700"
             >
               ביטול
             </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {preview.map((item, i) => {
-              const meta = CATEGORIES[item.category]
-              return (
-                <span
+            {preview.map((item, i) => (
+              <span
                   key={`${item.name}-${i}`}
-                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold ${meta.glow}`}
+                  className="flex items-center gap-1.5 rounded-xl border border-stone-200/70 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-800"
                 >
-                  <span>{meta.icon}</span>
                   <span>{item.name}</span>
-                  <span className="text-slate-500 font-normal">
+                  <span className="text-stone-400 font-normal">
                     ({item.quantity} {item.unit})
                   </span>
-                  {item.isHighProtein && <span>💪</span>}
-                  <span className="text-[11px] text-slate-600">{formatCurrency(item.estimatedPrice)}</span>
+                  {item.isHighProtein && (
+                    <span className="rounded bg-stone-200/70 px-1 py-0.2 text-[9px] font-semibold text-stone-700">חלבון</span>
+                  )}
+                  <span className="text-[11px] text-stone-500">{formatCurrency(item.estimatedPrice)}</span>
                   <button
                     onClick={() => removeFromPreview(i)}
-                    className="ms-1 rounded-full p-0.5 text-slate-400 hover:bg-black/5 hover:text-slate-700"
+                    className="ms-1 rounded-full p-0.5 text-stone-400 hover:bg-black/5 hover:text-stone-700"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )
-            })}
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               onClick={confirmAdd}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(5,150,105,0.25)] transition hover:bg-emerald-700 active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-apple-subtle transition hover:bg-black active:scale-95"
             >
-              <Check className="h-4 w-4 stroke-[3]" />
-              הוסף הכל לסל המשפחתי ({preview.length})
+              <Check className="h-4 w-4 stroke-[2.5]" />
+              הוסף הכל לסל ({preview.length})
             </button>
           </div>
         </div>

@@ -1,7 +1,8 @@
+import { ShoppingBag } from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories'
 import type { GroceryItem, Member } from '../types'
 import { ItemCard } from './ItemCard'
-import { ShoppingBag } from 'lucide-react'
+import type { StatusFilter } from './FilterBar'
 
 export function ItemList({
   items,
@@ -11,6 +12,7 @@ export function ItemList({
   onToggleStaple,
   onAssign,
   onDelete,
+  status,
 }: {
   items: GroceryItem[]
   members: Member[]
@@ -19,17 +21,22 @@ export function ItemList({
   onToggleStaple: (id: string) => void
   onAssign: (id: string, memberId: string | undefined) => void
   onDelete: (id: string) => void
+  status?: StatusFilter
 }) {
   if (items.length === 0) {
     return (
-      <div className="animate-float-in flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-200 bg-white/70 py-16 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-          <ShoppingBag className="h-7 w-7" />
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-stone-100 border border-stone-200/60 flex items-center justify-center text-stone-400 mb-4 shadow-apple-subtle">
+          <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
         </div>
-        <div>
-          <h3 className="text-sm font-bold text-slate-800">אין פריטים להצגה בסל</h3>
-          <p className="mt-0.5 text-xs text-slate-500">הוסיפו מוצרים באמצעות שורת החיפוש או הדיבור הקולי למעלה!</p>
-        </div>
+        <h3 className="text-base font-semibold text-stone-900 mb-1">הסל ריק</h3>
+        <p className="text-xs text-stone-500 max-w-xs leading-relaxed">
+          {status === 'bought'
+            ? 'טרם סומנו פריטים שנרכשו.'
+            : status === 'mine'
+            ? 'אין פריטים המשויכים אליך כעת.'
+            : 'הוסיפו מוצרים לסל באמצעות שורת החיפוש למעלה.'}
+        </p>
       </div>
     )
   }
@@ -40,22 +47,21 @@ export function ItemList({
   })).filter((g) => g.items.length > 0)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {grouped.map((group) => {
         const meta = CATEGORIES[group.category]
         const pendingCount = group.items.filter((i) => !i.boughtBy).length
 
         return (
-          <section key={group.category} className="space-y-2">
+          <section key={group.category} className="space-y-2.5">
             <div className="flex items-center justify-between px-1">
-              <h3 className="flex items-center gap-1.5 text-xs font-black text-slate-700">
-                <span>{meta.icon}</span>
+              <h3 className="flex items-center gap-2 text-xs font-semibold text-stone-700">
                 <span>{meta.label}</span>
-                <span className="text-[11px] font-semibold text-slate-400">· {group.items.length}</span>
+                <span className="text-[11px] font-normal text-stone-400">({group.items.length})</span>
               </h3>
               {pendingCount > 0 && (
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
-                  {pendingCount} לביצוע
+                <span className="text-[11px] font-medium text-stone-600 bg-stone-100/90 border border-stone-200/60 px-2.5 py-0.5 rounded-full">
+                  {pendingCount} נותרו
                 </span>
               )}
             </div>

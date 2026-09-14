@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart, Users, Sparkles, Copy, Check, ArrowRight, LogIn } from 'lucide-react'
+import { ShoppingCart, Copy, Check, ArrowRight, LogIn } from 'lucide-react'
 import { joinDemoFamily } from '../data/demoFamily'
 import { createFamily, joinFamily, MAX_MEMBER_NAME_LENGTH } from '../utils/familyActions'
 import { getSavedProfile } from '../utils/savedProfile'
@@ -25,6 +25,12 @@ export function AuthScreen({
     return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, FAMILY_CODE_LENGTH)
   })
 
+  const [initialFounderName] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    const params = new URLSearchParams(window.location.search)
+    return params.get('fn') || ''
+  })
+
   // Check for a saved profile to offer 1-tap login (Bug 2 fix)
   const [savedProfile] = useState(() => {
     const profile = getSavedProfile()
@@ -45,6 +51,7 @@ export function AuthScreen({
   const [createdCode, setCreatedCode] = useState('')
   const [pendingSession, setPendingSession] = useState<Session | null>(null)
   const [copied, setCopied] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
 
   function handleQuickLogin() {
     if (!savedProfile) return
@@ -58,14 +65,14 @@ export function AuthScreen({
     setError(null)
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!name.trim()) {
       setError('נא להזין שם.')
       return
     }
     triggerHaptic(25)
     try {
-      const result = createFamily(name)
+      const result = await createFamily(name)
       setCreatedCode(result.code)
       setPendingSession({ familyId: result.familyId, memberId: result.memberId })
       setMode('created')
@@ -74,7 +81,7 @@ export function AuthScreen({
     }
   }
 
-  function handleJoin() {
+  async function handleJoin() {
     if (!name.trim()) {
       setError('נא להזין שם.')
       return
@@ -84,15 +91,19 @@ export function AuthScreen({
       return
     }
     triggerHaptic(25)
+    setIsJoining(true)
+    setError(null)
     try {
-      const result = joinFamily(code, name)
+      const result = await joinFamily(code, name, { founderName: initialFounderName })
       if ('error' in result) {
         setError(result.error)
+        setIsJoining(false)
         return
       }
       onAuthenticated(result)
     } catch {
       setError('אירעה שגיאה בהצטרפות. נסו לרענן את הדף ולנסות שוב.')
+      setIsJoining(false)
     }
   }
 
@@ -119,52 +130,52 @@ export function AuthScreen({
   return (
     <div
       dir="rtl"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f9f6] px-4 py-10 text-slate-800"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#faf9f6] px-4 py-10 text-stone-800"
     >
-      {/* Gentle organic background gradient */}
+      {/* Gentle ambient background */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-40"
+        className="pointer-events-none fixed inset-0 opacity-60"
         style={{
           background:
-            'radial-gradient(circle at 15% 10%, rgba(16,185,129,0.12), transparent 45%), radial-gradient(circle at 85% 80%, rgba(20,184,166,0.1), transparent 45%)',
+            'radial-gradient(circle at 20% 15%, rgba(0,0,0,0.02) 0%, transparent 60%), radial-gradient(circle at 80% 85%, rgba(0,0,0,0.03) 0%, transparent 60%)',
         }}
       />
 
-      <div className="relative w-full max-w-md animate-float-in space-y-5">
+      <div className="relative w-full max-w-md animate-float-in space-y-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_8px_20px_rgba(16,185,129,0.3)]">
-            <ShoppingCart className="h-8 w-8 text-white stroke-[2.5]" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-900 text-white shadow-apple">
+            <ShoppingCart className="h-6 w-6 stroke-[1.75]" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">הסל שלנו</h1>
-          <p className="text-sm font-medium text-slate-500">רשימת הקניות המשפחתית שלכם, מסונכרנת בזמן אמת</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-stone-900">הסל שלנו</h1>
+          <p className="text-xs sm:text-sm text-stone-500">ניהול רשימת קניות משותפת בזמן אמת</p>
         </div>
 
         {/* Welcome Back card — shown when a saved profile is found */}
         {savedProfile && mode === 'choice' && (
-          <div className="animate-float-in rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-[0_4px_20px_rgba(16,185,129,0.18)]">
+          <div className="rounded-2xl border border-stone-200/80 bg-stone-50/90 p-4 shadow-apple-subtle">
             <div className="flex items-center gap-3">
               <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl font-black text-white shadow-md"
-                style={{ background: savedProfile.memberColor || '#059669' }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold text-white shadow-apple-subtle"
+                style={{ background: savedProfile.memberColor || '#292524' }}
               >
                 {savedProfile.memberAvatar || savedProfile.memberName.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-emerald-700">ברוך שובך! 👋</p>
-                <p className="text-base font-black text-slate-900 truncate">{savedProfile.memberName}</p>
-                <p className="text-xs text-slate-500">קוד משפחה: <span className="font-mono font-bold">{savedProfile.familyCode}</span></p>
+                <p className="text-xs text-stone-500 font-medium">ברוך שובך</p>
+                <p className="text-sm font-semibold text-stone-900 truncate">{savedProfile.memberName}</p>
+                <p className="text-[11px] text-stone-400">קוד משפחה: <span className="font-mono font-medium text-stone-600">{savedProfile.familyCode}</span></p>
               </div>
             </div>
             <button
               onClick={handleQuickLogin}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white shadow-[0_2px_8px_rgba(5,150,105,0.3)] transition hover:bg-emerald-700 active:scale-95"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-stone-900 py-2.5 text-xs font-medium text-white shadow-apple-subtle transition hover:bg-stone-800 active:scale-95"
             >
-              <LogIn className="h-4 w-4" />
-              כניסה מחדש כ-{savedProfile.memberName} 👈
+              <LogIn className="h-3.5 w-3.5" />
+              כניסה כ-{savedProfile.memberName}
             </button>
             <button
               onClick={() => setMode('choice')}
-              className="mt-2 w-full text-center text-xs text-slate-400 hover:text-slate-600"
+              className="mt-2 w-full text-center text-[11px] text-stone-400 hover:text-stone-600"
             >
               החלפת משתמש / כניסה עם קוד אחר
             </button>
@@ -172,20 +183,23 @@ export function AuthScreen({
         )}
 
         {initialJoinCode && mode === 'join' && (
-          <div className="animate-float-in rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xs font-bold text-emerald-800 shadow-sm">
-            🎉 קיבלת הזמנה להצטרף למשפחה (קוד: <span className="font-mono tracking-widest">{initialJoinCode}</span>)!
+          <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-center text-xs font-medium text-stone-700 shadow-apple-subtle">
+            {initialFounderName
+              ? `${initialFounderName} הזמין/ה אותך להצטרף לסל המשפחתי (קוד: `
+              : 'הזמנה להצטרפות למשפחה (קוד: '}
+            <span className="font-mono font-semibold tracking-wider">{initialJoinCode}</span>)
             <br />
-            הזן/י את שמך בלבד כדי להיכנס לסל.
+            הזינו את שמכם כדי להתחבר לסל.
           </div>
         )}
 
         {notice && (
-          <div className="animate-float-in rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-medium text-amber-900">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-center text-xs font-medium text-stone-700 shadow-apple-subtle">
             {notice}
           </div>
         )}
 
-        <div className="animate-float-in rounded-3xl border border-slate-200/90 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+        <div className="rounded-3xl border border-stone-200/80 bg-white p-6 sm:p-7 shadow-apple">
           {mode === 'choice' && (
             <div className="space-y-3">
               <button
@@ -193,18 +207,17 @@ export function AuthScreen({
                   resetForms()
                   setMode('create')
                 }}
-                className="group flex w-full items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-start transition hover:border-emerald-300 hover:bg-emerald-50 active:scale-98"
+                className="group flex w-full items-center justify-between rounded-2xl border border-stone-200/80 bg-stone-50/60 p-4 text-start transition hover:border-stone-400 hover:bg-stone-100/60 active:scale-98"
               >
                 <div>
-                  <h2 className="text-base font-black text-emerald-950 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <h2 className="text-sm font-semibold text-stone-900">
                     פתיחת משפחה חדשה
                   </h2>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    קבלו קוד ייחודי והזמינו את בני הבית
+                  <p className="mt-0.5 text-xs text-stone-500">
+                    קבלו קוד ייחודי להזמנת בני המשפחה
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-emerald-600 transition group-hover:-translate-x-1" />
+                <ArrowRight className="h-4 w-4 text-stone-400 transition group-hover:-translate-x-1 group-hover:text-stone-700" />
               </button>
 
               <button
@@ -212,27 +225,26 @@ export function AuthScreen({
                   resetForms()
                   setMode('join')
                 }}
-                className="group flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-start transition hover:border-slate-300 hover:bg-slate-50 active:scale-98"
+                className="group flex w-full items-center justify-between rounded-2xl border border-stone-200/80 bg-white p-4 text-start transition hover:border-stone-400 hover:bg-stone-50/60 active:scale-98"
               >
                 <div>
-                  <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-slate-600" />
+                  <h2 className="text-sm font-semibold text-stone-900">
                     הצטרפות עם קוד
                   </h2>
-                  <p className="mt-0.5 text-xs text-slate-500">יש לכם קוד? הכניסו אותו כאן</p>
+                  <p className="mt-0.5 text-xs text-stone-500">יש לכם קוד? הזינו אותו כאן</p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-slate-400 transition group-hover:-translate-x-1" />
+                <ArrowRight className="h-4 w-4 text-stone-400 transition group-hover:-translate-x-1 group-hover:text-stone-700" />
               </button>
 
               <div className="relative my-4 flex items-center justify-center">
-                <span className="w-full border-t border-slate-200" />
-                <span className="bg-white px-3 text-[11px] font-semibold text-slate-400">או לניסיון</span>
-                <span className="w-full border-t border-slate-200" />
+                <span className="w-full border-t border-stone-200/70" />
+                <span className="bg-white px-3 text-[11px] font-normal text-stone-400">או הדגמה מהירה</span>
+                <span className="w-full border-t border-stone-200/70" />
               </div>
 
               <button
                 onClick={handleTryDemo}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50 py-2.5 text-xs font-medium text-stone-600 transition hover:bg-stone-100 hover:text-stone-900"
               >
                 כניסה למשפחת הדמו (משפחת כהן)
               </button>
@@ -242,11 +254,11 @@ export function AuthScreen({
           {mode === 'create' && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-base font-black text-slate-900">איך קוראים לך?</h2>
-                <p className="text-xs text-slate-500">תהיה המנהל/ת של הסל המשפחתי</p>
+                <h2 className="text-sm sm:text-base font-semibold text-stone-900">איך קוראים לך?</h2>
+                <p className="text-xs text-stone-500">ניהול הסל המשפחתי</p>
               </div>
 
-              {error && <p className="text-xs font-bold text-rose-600">{error}</p>}
+              {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
 
               <input
                 type="text"
@@ -256,19 +268,19 @@ export function AuthScreen({
                 placeholder="השם שלך (למשל: דניאל)"
                 maxLength={MAX_MEMBER_NAME_LENGTH}
                 autoFocus
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:bg-white focus:outline-none transition-all"
               />
 
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setMode('choice')}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="rounded-2xl border border-stone-200/80 px-4 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 transition"
                 >
                   חזרה
                 </button>
                 <button
                   onClick={handleCreate}
-                  className="flex-1 rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(5,150,105,0.3)] transition hover:bg-emerald-700 active:scale-95"
+                  className="flex-1 rounded-2xl bg-stone-900 py-2.5 text-xs font-medium text-white shadow-apple-subtle transition hover:bg-stone-800 active:scale-95"
                 >
                   צור משפחה וקבל קוד
                 </button>
@@ -278,32 +290,32 @@ export function AuthScreen({
 
           {mode === 'created' && pendingSession && (
             <div className="space-y-4 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                <Check className="h-6 w-6 stroke-[3]" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-900 shadow-apple-subtle">
+                <Check className="h-6 w-6 stroke-[2]" />
               </div>
-              <h2 className="text-lg font-black text-slate-900">המשפחה נוצרה בהצלחה!</h2>
-              <p className="text-xs text-slate-500">
-                זהו הקוד הסודי של המשפחה. שתפו אותו עם כולם:
+              <h2 className="text-base font-semibold text-stone-900">המשפחה נוצרה בהצלחה</h2>
+              <p className="text-xs text-stone-500">
+                זהו קוד המשפחה. שתפו אותו עם בני הבית:
               </p>
 
-              <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-                <span className="font-mono text-2xl font-black tracking-[0.25em] text-emerald-800">
+              <div className="flex items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
+                <span className="font-mono text-2xl font-semibold tracking-[0.2em] text-stone-900">
                   {createdCode}
                 </span>
                 <button
                   onClick={copyCreatedCode}
-                  className="flex items-center gap-1 rounded-xl border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-50"
+                  className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50 shadow-apple-subtle"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copied ? 'הועתק!' : 'העתק'}</span>
+                  {copied ? <Check className="h-3.5 w-3.5 text-stone-800" /> : <Copy className="h-3.5 w-3.5 text-stone-400" />}
+                  <span>{copied ? 'הועתק' : 'העתקה'}</span>
                 </button>
               </div>
 
               <button
                 onClick={() => onAuthenticated(pendingSession)}
-                className="w-full rounded-2xl bg-emerald-600 py-3 text-xs font-black text-white shadow-[0_2px_10px_rgba(5,150,105,0.3)] transition hover:bg-emerald-700 active:scale-95"
+                className="w-full rounded-2xl bg-stone-900 py-3 text-xs font-medium text-white shadow-apple transition hover:bg-stone-800 active:scale-95"
               >
-                כניסה לסל הקניות המשפחתי 🚀
+                כניסה לסל הקניות המשפחתי
               </button>
             </div>
           )}
@@ -311,11 +323,11 @@ export function AuthScreen({
           {mode === 'join' && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-base font-black text-slate-900">הצטרפות למשפחה קיימת</h2>
-                <p className="text-xs text-slate-500">הזינו את הקוד שקיבלתם ואת שמכם</p>
+                <h2 className="text-sm sm:text-base font-semibold text-stone-900">הצטרפות למשפחה קיימת</h2>
+                <p className="text-xs text-stone-500">הזינו את הקוד שקיבלתם ואת שמכם</p>
               </div>
 
-              {error && <p className="text-xs font-bold text-rose-600">{error}</p>}
+              {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
 
               <div className="space-y-2.5">
                 <input
@@ -327,7 +339,7 @@ export function AuthScreen({
                   autoCapitalize="characters"
                   autoComplete="off"
                   autoFocus={!initialJoinCode}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm tracking-widest text-slate-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 font-mono text-sm tracking-widest text-stone-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-stone-400 focus:border-stone-400 focus:bg-white focus:outline-none transition-all"
                 />
 
                 <input
@@ -338,22 +350,24 @@ export function AuthScreen({
                   placeholder="השם שלך (למשל: אמא, דני, תמר)"
                   maxLength={MAX_MEMBER_NAME_LENGTH}
                   autoFocus={Boolean(initialJoinCode)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setMode('choice')}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  disabled={isJoining}
+                  className="rounded-2xl border border-stone-200/80 px-4 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 transition disabled:opacity-50"
                 >
                   חזרה
                 </button>
                 <button
                   onClick={handleJoin}
-                  className="flex-1 rounded-2xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(5,150,105,0.3)] transition hover:bg-emerald-700 active:scale-95"
+                  disabled={isJoining}
+                  className="flex-1 rounded-2xl bg-stone-900 py-2.5 text-xs font-medium text-white shadow-apple-subtle transition hover:bg-stone-800 active:scale-95 disabled:opacity-50"
                 >
-                  הצטרף למשפחה
+                  {isJoining ? 'מתחבר למשפחה...' : 'הצטרפות למשפחה'}
                 </button>
               </div>
             </div>

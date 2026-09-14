@@ -101,47 +101,47 @@ export function ProductLibraryModal({
         className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-[#f7f9f6] px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-sm shadow-sky-600/30">
-              <Layers className="h-5 w-5" />
+        <div className="flex items-center justify-between border-b border-stone-200/60 bg-stone-50/80 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-900 text-white shadow-apple-subtle">
+              <Layers className="h-5 w-5 stroke-[1.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-800">ספריית המוצרים של ישראל 🇮🇱</h2>
-                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-black text-sky-800">
-                  {ISRAELI_CATALOG.length} מוצרים עם תמונות
+                <h2 className="text-sm sm:text-base font-semibold text-stone-900">ספריית מוצרים</h2>
+                <span className="rounded-full bg-stone-100 border border-stone-200/60 px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                  {ISRAELI_CATALOG.length} מוצרים
                 </span>
               </div>
-              <p className="text-xs text-slate-500">לחצו על מוצר לבחירת חברה, כמות גרם וכמות יחידות</p>
+              <p className="text-xs text-stone-500">לחצו על מוצר להוספה מהירה או התאמת יחידות ומשקל</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors"
             aria-label="סגור"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="p-4 border-b border-slate-100 bg-white space-y-3">
+        <div className="p-4 border-b border-stone-200/60 bg-white space-y-3">
           {/* Search input */}
           <div className="relative">
-            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="חפש לפי שם מוצר, חברה (תנובה, שטראוס...), גרם או ליטר..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50/70 py-2.5 pr-10 pl-10 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:border-sky-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 transition-all"
+              placeholder="חיפוש לפי שם, מותג, משקל או תכולה..."
+              className="w-full rounded-2xl border border-stone-200 bg-stone-50/70 py-2.5 pr-10 pl-10 text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:border-stone-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-stone-400/20 transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -159,10 +159,10 @@ export function ProductLibraryModal({
                     triggerHaptic(15)
                     setSelectedBrand(brand.id)
                   }}
-                  className={`flex items-center gap-1 shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1 shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
                     active
-                      ? 'bg-sky-600 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-stone-900 text-white shadow-apple-subtle'
+                      : 'bg-stone-100/80 text-stone-600 hover:bg-stone-200/80'
                   }`}
                 >
                   <span>{brand.name}</span>
@@ -175,10 +175,10 @@ export function ProductLibraryModal({
           <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
             <button
               onClick={() => setSelectedCategory('all')}
-              className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+              className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
                 selectedCategory === 'all'
-                  ? 'bg-slate-800 text-white'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  ? 'bg-stone-900 text-white'
+                  : 'bg-stone-100/80 text-stone-500 hover:bg-stone-200/80'
               }`}
             >
               כל המחלקות
@@ -192,13 +192,12 @@ export function ProductLibraryModal({
                     triggerHaptic(15)
                     setSelectedCategory(catKey as Category)
                   }}
-                  className={`flex items-center gap-1 shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+                  className={`flex items-center gap-1 shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
                     active
-                      ? 'bg-slate-800 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-stone-900 text-white'
+                      : 'bg-stone-100/80 text-stone-600 hover:bg-stone-200/80'
                   }`}
                 >
-                  <span>{meta.icon}</span>
                   <span>{meta.label}</span>
                 </button>
               )
@@ -226,13 +225,13 @@ export function ProductLibraryModal({
                     onClick={() => handleCardClick(product)}
                     className={`group relative flex items-center justify-between rounded-2xl border p-3 transition-all cursor-pointer ${
                       inCart
-                        ? 'border-emerald-200 bg-emerald-50/30'
-                        : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-xs'
+                        ? 'border-stone-400/80 bg-stone-100/70 shadow-apple-subtle'
+                        : 'border-stone-200/80 bg-white hover:border-stone-400 hover:shadow-apple-subtle'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       {/* Product Image or Authentic Emoji */}
-                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-100 shadow-2xs flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-stone-50 border border-stone-200/60 shadow-apple-subtle flex items-center justify-center group-hover:scale-105 transition-transform">
                         {product.imageUrl ? (
                           <img
                             src={product.imageUrl}
@@ -253,33 +252,33 @@ export function ProductLibraryModal({
 
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                          <span className="rounded-md bg-stone-100 border border-stone-200/60 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
                             {product.brand}
                           </span>
                           {product.badge && (
-                            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-800">
+                            <span className="rounded-md bg-stone-100 border border-stone-200/80 px-1.5 py-0.5 text-[10px] font-medium text-stone-700">
                               {product.badge}
                             </span>
                           )}
                           {product.protein && !product.badge && (
-                            <span className="rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">
-                              חלבון גבוה 💪
+                            <span className="rounded-md bg-stone-150 border border-stone-200 px-1.5 py-0.5 text-[10px] font-medium text-stone-700">
+                              עשיר בחלבון
                             </span>
                           )}
                         </div>
 
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5 line-clamp-1 group-hover:text-sky-700 transition-colors">
+                        <h4 className="text-xs sm:text-sm font-medium text-stone-900 mt-0.5 line-clamp-1 group-hover:text-stone-700 transition-colors">
                           {product.name}
                         </h4>
 
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-slate-500">{product.size}</span>
-                          <span className="text-[11px] font-semibold text-slate-300">·</span>
-                          <span className="text-xs font-black text-slate-900">
+                          <span className="text-[11px] text-stone-400">{product.size}</span>
+                          <span className="text-[11px] font-semibold text-stone-300">·</span>
+                          <span className="text-xs font-semibold text-stone-900">
                             {formatCurrency(product.price)}
                           </span>
-                          <span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.2 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                            בחר סוג/גרם ⚙️
+                          <span className="text-[10px] font-medium text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            התאמה אישית
                           </span>
                         </div>
                       </div>
@@ -290,17 +289,17 @@ export function ProductLibraryModal({
                         e.stopPropagation()
                         handleAdd(product)
                       }}
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl transition-all shadow-xs ${
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl transition-all shadow-apple-subtle ${
                         isJustAdded
-                          ? 'bg-emerald-600 text-white scale-110'
+                          ? 'bg-stone-900 text-white scale-105'
                           : inCart
-                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                            : 'bg-sky-600 text-white hover:bg-sky-700 active:scale-95'
+                            ? 'bg-stone-200 text-stone-800'
+                            : 'bg-stone-900 text-white hover:bg-stone-800 active:scale-95'
                       }`}
                       title={inCart ? 'נמצא בסל (הוסף עוד)' : 'הוסף לסל'}
                     >
                       {isJustAdded ? (
-                        <Check className="h-4 w-4 stroke-[3]" />
+                        <Check className="h-4 w-4 stroke-[2.5]" />
                       ) : inCart ? (
                         <Check className="h-4 w-4" />
                       ) : (
@@ -315,13 +314,13 @@ export function ProductLibraryModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-100 bg-[#f7f9f6] px-5 py-3.5 flex items-center justify-between">
-          <span className="text-xs text-slate-500 font-medium">
-            מוצגות {filteredProducts.length} תוצאות
+        <div className="border-t border-stone-200/60 bg-stone-50/80 px-5 py-3.5 flex items-center justify-between">
+          <span className="text-xs text-stone-500 font-normal">
+            מוצגים {filteredProducts.length} פריטים
           </span>
           <button
             onClick={onClose}
-            className="rounded-xl bg-slate-800 px-5 py-2 text-xs font-bold text-white hover:bg-slate-900 transition-colors"
+            className="rounded-xl bg-stone-900 px-5 py-2 text-xs font-medium text-white hover:bg-stone-800 transition-colors shadow-apple-subtle"
           >
             סיום
           </button>

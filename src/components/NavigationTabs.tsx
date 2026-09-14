@@ -20,41 +20,54 @@ export function NavigationTabs({
     onTabChange(tab)
   }
 
-  const tabs: { id: ActiveTab; label: string; icon: typeof ShoppingBag; badge?: number }[] = [
-    { id: 'cart', label: 'רשימת הקניות', icon: ShoppingBag, badge: pendingCount },
-    { id: 'staples', label: 'מוצרים קבועים', icon: Sparkles },
-    { id: 'family', label: 'המשפחה והוצאות', icon: Users },
+  const tabs: {
+    id: ActiveTab
+    label: string
+    shortLabel: string
+    icon: typeof ShoppingBag
+    badge?: number
+  }[] = [
+    { id: 'cart', label: 'רשימת הקניות', shortLabel: 'קניות', icon: ShoppingBag, badge: pendingCount },
+    { id: 'staples', label: 'מוצרים קבועים', shortLabel: 'קבועים', icon: Sparkles },
+    { id: 'family', label: 'המשפחה והוצאות', shortLabel: 'משפחה', icon: Users },
   ]
 
   return (
-    <nav aria-label="ניווט ראשי" className="flex items-center justify-center p-1">
-      <div className="flex w-full max-w-md items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <nav
+      aria-label="ניווט ראשי"
+      className="fixed bottom-0 inset-x-0 z-40 border-t border-black/[0.04] bg-white/80 backdrop-blur-xl pb-safe shadow-[0_-1px_4px_rgba(0,0,0,0.02)] transition-all"
+    >
+      <div className="mx-auto flex max-w-md items-center justify-around px-2 py-1.5">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
-
           return (
             <button
               key={tab.id}
               onClick={() => handleSelect(tab.id)}
-              className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all select-none ${
-                isActive
-                  ? 'bg-emerald-600 text-white shadow-[0_2px_8px_rgba(5,150,105,0.25)]'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              className={`relative flex flex-col items-center justify-center gap-1 px-4 py-1.5 rounded-2xl transition-all select-none min-w-[72px] ${
+                isActive ? 'text-stone-900' : 'text-stone-400 hover:text-stone-700'
               }`}
             >
-              <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-              <span>{tab.label}</span>
-
-              {tab.badge !== undefined && tab.badge > 0 && (
-                <span
-                  className={`ms-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-black ${
-                    isActive ? 'bg-white text-emerald-800' : 'bg-emerald-100 text-emerald-800'
-                  }`}
-                >
-                  {tab.badge}
-                </span>
+              {/* Active indicator pill */}
+              {isActive && (
+                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-stone-900" />
               )}
+              <div
+                className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${
+                  isActive ? 'bg-stone-100 text-stone-900' : ''
+                }`}
+              >
+                <Icon className={`h-4.5 w-4.5 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'}`} />
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-900 px-1 text-[9px] font-semibold text-white">
+                    {tab.badge > 99 ? '99+' : tab.badge}
+                  </span>
+                )}
+              </div>
+              <span className={`text-[11px] ${isActive ? 'font-semibold text-stone-900' : 'font-normal text-stone-400'}`}>
+                {tab.shortLabel}
+              </span>
             </button>
           )
         })}
