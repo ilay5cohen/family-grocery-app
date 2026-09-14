@@ -6,9 +6,9 @@ import { Header } from './components/Header'
 import { ItemList } from './components/ItemList'
 import { NavigationTabs, type ActiveTab } from './components/NavigationTabs'
 import { OnboardingModal } from './components/OnboardingModal'
-import { SmartAddBar } from './components/SmartAddBar'
+import { StatsSearchRow } from './components/StatsSearchRow'
+import { ManualAddForm } from './components/ManualAddForm'
 import { StaplesTab } from './components/StaplesTab'
-import { StatsBar } from './components/StatsBar'
 import { FamilyTab } from './components/FamilyTab'
 import { SupermarketMode } from './components/SupermarketMode'
 import { PriceComparisonModal } from './components/PriceComparisonModal'
@@ -27,8 +27,8 @@ import { saveProfile, clearSavedProfile } from './utils/savedProfile'
 import { uid } from './utils/id'
 import type { Category, Session } from './types'
 
-/** How many toasts can stack before the oldest is pushed out. */
-const MAX_VISIBLE_TOASTS = 3
+/** Show single compact toast at a time so rapid actions don't cover the screen */
+const MAX_VISIBLE_TOASTS = 1
 
 ensureDemoFamilySeeded()
 
@@ -87,6 +87,7 @@ function FamilyApp({
   const [showProductLibrary, setShowProductLibrary] = useState(false)
   const [selectedProductForVariantPicker, setSelectedProductForVariantPicker] = useState<CatalogProduct | null>(null)
   const [showFileImport, setShowFileImport] = useState(false)
+  const [showManualAdd, setShowManualAdd] = useState(false)
   const [showInstallPwa, setShowInstallPwa] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<ActiveTab>('cart')
@@ -289,19 +290,15 @@ function FamilyApp({
         {/* TAB 1: CART (רשימת הקניות הראשית - Content First) */}
         {activeTab === 'cart' && (
           <main className="space-y-3 animate-float-in">
-            {/* Collapsible Micro Status Strip */}
-            <StatsBar stats={store.stats} />
-
-            {/* Smart Add Bar with Voice & File Import */}
-            <SmartAddBar
-              onConfirm={(items) => store.addItems(items, memberId)}
-              onManualAdd={(item) => store.addManualItem(item, memberId)}
+            {/* ROW 1: 3/4 Stats Card + 1/4 Round Search button (expands smoothly) */}
+            <StatsSearchRow
+              stats={store.stats}
+              onConfirmAddItems={(items) => store.addItems(items, memberId)}
               onSelectCatalogProduct={(product) => setSelectedProductForVariantPicker(product)}
               onOpenProductLibrary={() => setShowProductLibrary(true)}
-              onOpenFileImport={() => setShowFileImport(true)}
             />
 
-            {/* Sticky Filters & Quick Action Tools */}
+            {/* ROW 2: Compact Filter Dropdowns + Tools (הוספה ידנית, ייבוא, השוואה, קטלוג) */}
             <FilterBar
               status={status}
               onStatusChange={setStatus}
@@ -309,6 +306,8 @@ function FamilyApp({
               onCategoryChange={setCategory}
               onOpenPriceComparison={() => setShowPriceComparison(true)}
               onOpenProductLibrary={() => setShowProductLibrary(true)}
+              onOpenManualAdd={() => setShowManualAdd(true)}
+              onOpenFileImport={() => setShowFileImport(true)}
             />
 
             {/* Grocery Items List - Prominent & Uncluttered */}
@@ -414,6 +413,25 @@ function FamilyApp({
         onClose={() => setShowInstallPwa(false)}
         deferredPrompt={deferredPrompt}
       />
+
+      {/* Manual Add Form Modal */}
+      {showManualAdd && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in"
+          onClick={() => setShowManualAdd(false)}
+        >
+          <div className="w-full max-w-md animate-bounce-in" onClick={(e) => e.stopPropagation()}>
+            <ManualAddForm
+              onAdd={(item) => {
+                store.addManualItem(item, memberId)
+                setShowManualAdd(false)
+                pushToast({ message: `"${item.name}" נוסף לסל ✓`, type: 'success' })
+              }}
+              onCancel={() => setShowManualAdd(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Floating Undo Toast */}
       <Toast toasts={toasts} onDismiss={dismissToast} />

@@ -6,6 +6,7 @@ import {
   Download,
   CheckCircle2,
   ShoppingBag,
+  Smartphone,
 } from 'lucide-react'
 import { triggerHaptic } from '../utils/haptics'
 
@@ -62,26 +63,26 @@ export function InstallPwaModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden text-right"
+        className="bg-white rounded-3xl shadow-apple-float border border-black/[0.06] w-full max-w-md overflow-hidden text-right animate-bounce-in"
         dir="rtl"
       >
         {/* Header with App Banner */}
-        <div className="relative p-5 sm:p-6 border-b border-stone-200/60 bg-stone-50/80 flex items-center justify-between">
+        <div className="relative p-5 sm:p-6 border-b border-stone-100 bg-stone-50/70 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-stone-900 shadow-apple-subtle flex items-center justify-center text-white">
-              <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#4f46e5] shadow-indigo-depth flex items-center justify-center text-white">
+              <ShoppingBag className="w-6 h-6 stroke-[1.8]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-stone-900">הסל שלנו</h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-200/80 text-stone-700 font-medium">
-                  אפליקציה
+                <h2 className="text-base font-bold text-stone-900">התקנת אפליקציית "הסל שלנו"</h2>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#4f46e5]/10 text-[#4f46e5] font-bold">
+                  חינם
                 </span>
               </div>
               <p className="text-xs text-stone-500 mt-0.5">
-                התקנה למסך הבית לגישה מיידית
+                עובד כאפליקציה עצמאית מהירה במסך מלא
               </p>
             </div>
           </div>
@@ -95,35 +96,35 @@ export function InstallPwaModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 sm:p-6 space-y-5">
+        <div className="p-5 sm:p-6 space-y-4">
           {/* Already installed state */}
           {isStandalone ? (
             <div className="py-4 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-800 shadow-apple-subtle flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-6 h-6 stroke-[1.5]" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 shadow-apple-subtle flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-6 h-6 stroke-[2]" />
               </div>
-              <p className="font-semibold text-stone-900 text-base">
-                האפליקציה מותקנת במסך הבית
+              <p className="font-bold text-stone-900 text-base">
+                האפליקציה כבר מותקנת במסך הבית שלך!
               </p>
               <p className="text-xs text-stone-500">
-                ניתן לפתוח אותה ישירות ממסך האפליקציות במסך מלא מהיר.
+                ניתן לפתוח אותה ישירות מהאייקון במסך הבית לפעולה מהירה ללא דפדפן.
               </p>
             </div>
           ) : isIOS ? (
             /* iOS Safari Instructions */
-            <div className="space-y-4">
-              <p className="text-xs sm:text-sm font-medium text-stone-700">
-                להתקנה ב-iPhone או iPad:
+            <div className="space-y-3">
+              <p className="text-xs sm:text-sm font-bold text-stone-800">
+                התקנה ב-iPhone או iPad (ספארי):
               </p>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <div className="flex items-start gap-3 p-3 rounded-2xl bg-stone-50 border border-stone-200/60">
-                  <div className="w-6 h-6 rounded-lg bg-stone-200 text-stone-800 flex items-center justify-center shrink-0 font-semibold text-xs mt-0.5">
+                  <div className="w-6 h-6 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                     1
                   </div>
-                  <div className="text-xs text-stone-600">
+                  <div className="text-xs text-stone-700 leading-relaxed">
                     לחצו על כפתור <strong>השיתוף</strong> (Share) בתחתית הדפדפן Safari:
-                    <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white border border-stone-200 text-stone-800 font-medium">
+                    <div className="mt-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-[#4f46e5] font-bold">
                       <Share2 className="w-3.5 h-3.5" />
                       שיתוף Safari
                     </div>
@@ -131,12 +132,12 @@ export function InstallPwaModal({
                 </div>
 
                 <div className="flex items-start gap-3 p-3 rounded-2xl bg-stone-50 border border-stone-200/60">
-                  <div className="w-6 h-6 rounded-lg bg-stone-200 text-stone-800 flex items-center justify-center shrink-0 font-semibold text-xs mt-0.5">
+                  <div className="w-6 h-6 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                     2
                   </div>
-                  <div className="text-xs text-stone-600">
-                    גללו מעט ולחצו על:
-                    <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white border border-stone-200 text-stone-800 font-medium">
+                  <div className="text-xs text-stone-700 leading-relaxed">
+                    גללו בתפריט ובחרו <strong>"הוסף למסך הבית"</strong>:
+                    <div className="mt-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-[#4f46e5] font-bold">
                       <PlusSquare className="w-3.5 h-3.5" />
                       הוסף למסך הבית
                     </div>
@@ -144,35 +145,42 @@ export function InstallPwaModal({
                 </div>
 
                 <div className="flex items-start gap-3 p-3 rounded-2xl bg-stone-50 border border-stone-200/60">
-                  <div className="w-6 h-6 rounded-lg bg-stone-200 text-stone-800 flex items-center justify-center shrink-0 font-semibold text-xs mt-0.5">
+                  <div className="w-6 h-6 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                     3
                   </div>
-                  <div className="text-xs text-stone-600">
-                    לחצו על <strong>"הוסף"</strong> בפינה העליונה של המסך.
+                  <div className="text-xs text-stone-700 leading-relaxed">
+                    לחצו על <strong>"הוסף"</strong> בפינה העליונה — וזהו! האפליקציה תופיע במסך הבית.
                   </div>
                 </div>
               </div>
             </div>
           ) : (
             /* Android / Chrome / Edge Installation */
-            <div className="space-y-4">
+            <div className="space-y-3">
               {deferredPrompt ? (
                 <button
+                  type="button"
                   onClick={handleNativeInstall}
                   disabled={isInstalling}
-                  className="w-full py-3.5 rounded-2xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-medium text-xs sm:text-sm shadow-apple-subtle flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3.5 rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-sm shadow-indigo-depth flex items-center justify-center gap-2 transition-all"
                 >
-                  <Download className="w-4 h-4" />
-                  {isInstalling ? 'מתקין...' : 'התקנה למסך הבית'}
+                  <Download className="w-4 h-4 stroke-[2.5]" />
+                  <span>{isInstalling ? 'מתקין אפליקציה...' : 'התקן אפליקציה עכשיו בלחיצה'}</span>
                 </button>
               ) : (
-                <div className="text-xs text-stone-600 space-y-2 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/60">
-                  <p className="font-medium text-stone-800">
-                    כיצד להתקין מהדפדפן:
+                <div className="space-y-2 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70 text-xs text-stone-700 leading-relaxed">
+                  <div className="flex items-center gap-2 font-bold text-stone-900">
+                    <Smartphone className="w-4 h-4 text-[#4f46e5]" />
+                    <span>כיצד להתקין באנדרואיד / כרום:</span>
+                  </div>
+                  <p>
+                    1. פתחו את תפריט האפשרויות בדפדפן (3 הנקודות <strong>⋮</strong> בפינה העליונה).
                   </p>
                   <p>
-                    פתחו את תפריט האפשרויות בדפדפן (⋮) ולחצו על{' '}
-                    <strong>"התקן אפליקציה"</strong> או <strong>"הוסף למסך הבית"</strong>.
+                    2. לחצו על <strong>"התקן אפליקציה"</strong> או <strong>"הוסף למסך הבית"</strong>.
+                  </p>
+                  <p className="text-stone-500 text-[11px] pt-1">
+                    האפליקציה תותקן מיד ותיפתח במסך מלא עצמאי ונוח.
                   </p>
                 </div>
               )}
@@ -180,29 +188,30 @@ export function InstallPwaModal({
           )}
 
           {/* Benefits Grid */}
-          <div className="pt-3 border-t border-stone-100 grid grid-cols-3 gap-2 text-center">
-            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/40">
-              <span className="text-xs font-medium text-stone-700 block">מהירות</span>
-              <p className="text-[11px] text-stone-400 mt-0.5">טעינה מיידית</p>
+          <div className="pt-2 border-t border-stone-100 grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 rounded-xl bg-stone-50 border border-stone-100">
+              <span className="text-xs font-bold text-stone-800 block">מהירות שיא</span>
+              <p className="text-[10px] text-stone-400 mt-0.5">פתיחה מיידית</p>
             </div>
-            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/40">
-              <span className="text-xs font-medium text-stone-700 block">מסך מלא</span>
-              <p className="text-[11px] text-stone-400 mt-0.5">ללא סרגלים</p>
+            <div className="p-2 rounded-xl bg-stone-50 border border-stone-100">
+              <span className="text-xs font-bold text-stone-800 block">מסך מלא</span>
+              <p className="text-[10px] text-stone-400 mt-0.5">ללא סרגלי דפדפן</p>
             </div>
-            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/40">
-              <span className="text-xs font-medium text-stone-700 block">סנכרון</span>
-              <p className="text-[11px] text-stone-400 mt-0.5">בזמן אמת</p>
+            <div className="p-2 rounded-xl bg-stone-50 border border-stone-100">
+              <span className="text-xs font-bold text-stone-800 block">סנכרון מלא</span>
+              <p className="text-[10px] text-stone-400 mt-0.5">בזמן אמת</p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-stone-50/80 border-t border-stone-200/60 text-center">
+        <div className="p-4 bg-stone-50 border-t border-stone-100 text-center">
           <button
+            type="button"
             onClick={onClose}
-            className="px-6 py-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-200/70 transition-colors"
+            className="w-full py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-200/70 transition-colors"
           >
-            סגירה
+            סגור
           </button>
         </div>
       </div>

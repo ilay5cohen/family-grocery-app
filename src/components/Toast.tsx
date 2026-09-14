@@ -15,28 +15,32 @@ interface ToastProps {
   onDismiss: (id: string) => void
 }
 
-const DEFAULT_DURATION = 4500
+const DEFAULT_DURATION = 3500
 
-function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: string) => void }) {
-  // Each toast owns its own timer so a newer toast can never cut short — or
-  // silently swallow the undo of — an older one still on screen.
+export function Toast({ toasts, onDismiss }: ToastProps) {
+  // Show ONLY the most recent toast so it never stacks or dominates the screen!
+  const currentToast = toasts.length > 0 ? toasts[toasts.length - 1] : null
+
   const onDismissRef = useRef(onDismiss)
   useEffect(() => {
     onDismissRef.current = onDismiss
   }, [onDismiss])
 
   useEffect(() => {
+    if (!currentToast) return
     const timer = window.setTimeout(() => {
-      onDismissRef.current(toast.id)
-    }, toast.duration ?? DEFAULT_DURATION)
+      onDismissRef.current(currentToast.id)
+    }, currentToast.duration ?? DEFAULT_DURATION)
     return () => window.clearTimeout(timer)
-  }, [toast.id, toast.duration])
+  }, [currentToast])
 
-  const type = toast.type ?? 'info'
+  if (!currentToast) return null
+
+  const type = currentToast.type ?? 'info'
   const bgColor = {
-    success: 'bg-emerald-600 border-emerald-500 text-white',
-    error: 'bg-rose-600 border-rose-500 text-white',
-    info: 'bg-slate-900/95 border-slate-700/60 text-white',
+    success: 'bg-emerald-600/95 border-emerald-500/80 text-white',
+    error: 'bg-rose-600/95 border-rose-500/80 text-white',
+    info: 'bg-[#4f46e5]/95 border-[#4f46e5] text-white',
   }[type]
 
   const Icon = {
@@ -47,51 +51,43 @@ function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: str
 
   return (
     <div
-      className={`animate-slide-up flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.25)] backdrop-blur-xl ${bgColor}`}
+      aria-live="polite"
+      aria-atomic="true"
+      className="fixed bottom-20 inset-x-4 z-50 flex justify-center pointer-events-none animate-slide-up"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
-        <Icon className="h-5 w-5 shrink-0 text-white/90" />
-        <p className="truncate text-xs font-bold text-white">{toast.message}</p>
-      </div>
+      <div
+        className={`pointer-events-auto flex items-center justify-between gap-2.5 rounded-full border px-3.5 py-2 shadow-apple-float backdrop-blur-xl max-w-sm w-auto ${bgColor}`}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 text-white" />
+          <p className="truncate text-xs font-semibold text-white">{currentToast.message}</p>
+        </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {toast.onAction && (
+        <div className="flex shrink-0 items-center gap-1.5">
+          {currentToast.onAction && (
+            <button
+              type="button"
+              onClick={() => {
+                currentToast.onAction?.()
+                onDismiss(currentToast.id)
+              }}
+              className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-bold text-white transition hover:bg-white/30 active:scale-95 shadow-2xs"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>{currentToast.actionLabel ?? 'בטל'}</span>
+            </button>
+          )}
+
           <button
-            onClick={() => {
-              toast.onAction?.()
-              onDismiss(toast.id)
-            }}
-            className="flex items-center gap-1 rounded-xl bg-white/20 px-2.5 py-1 text-xs font-bold text-white shadow-xs transition hover:bg-white/30 active:scale-95"
+            type="button"
+            onClick={() => onDismiss(currentToast.id)}
+            aria-label="סגור הודעה"
+            className="rounded-full p-1 text-white/80 hover:bg-white/10 hover:text-white"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {toast.actionLabel ?? 'בטל'}
+            <X className="h-3.5 w-3.5" />
           </button>
-        )}
-
-        <button
-          onClick={() => onDismiss(toast.id)}
-          aria-label="סגור הודעה"
-          className="rounded-lg p-1 text-white/70 hover:bg-white/10 hover:text-white"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        </div>
       </div>
     </div>
-  )
-}
-
-export function Toast({ toasts, onDismiss }: ToastProps) {
-  if (toasts.length === 0) return null
-
-  return (
-    <aside
-      aria-label="הודעות מערכת"
-      aria-live="polite"
-      className="fixed bottom-20 start-1/2 z-50 w-full max-w-sm -translate-x-1/2 space-y-2 px-4 rtl:translate-x-1/2"
-    >
-      {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
-      ))}
-    </aside>
   )
 }

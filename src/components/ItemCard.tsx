@@ -67,8 +67,8 @@ export function ItemCard({
           aria-label={bought ? 'בטל סימון קנייה' : 'סמן כנקנה'}
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-90 ${
             bought
-              ? 'border-stone-900 bg-stone-900 text-white shadow-apple-subtle animate-check-pop'
-              : 'border-stone-300 bg-stone-50/50 text-transparent hover:border-stone-500 hover:bg-stone-100'
+              ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth animate-check-pop'
+              : 'border-stone-300 bg-stone-50/50 text-transparent hover:border-[#4f46e5] hover:bg-[#4f46e5]/5'
           }`}
         >
           <Check className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -96,11 +96,11 @@ export function ItemCard({
               title={isStaple ? 'מוצר קבוע - יישמר באיפוס של יום ראשון' : 'לחץ להפיכה למוצר קבוע שבועי'}
               className={`flex shrink-0 items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition ${
                 isStaple
-                  ? 'border-stone-300 bg-stone-100 text-stone-900'
+                  ? 'border-[#4f46e5]/30 bg-[#4f46e5]/10 text-[#4f46e5]'
                   : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300 hover:text-stone-700'
               }`}
             >
-              <Star className={`h-2.5 w-2.5 ${isStaple ? 'fill-stone-900 text-stone-900' : 'text-stone-400'}`} />
+              <Star className={`h-2.5 w-2.5 ${isStaple ? 'fill-[#4f46e5] text-[#4f46e5]' : 'text-stone-400'}`} />
               <span>{isStaple ? 'קבוע' : '+קבוע'}</span>
             </button>
 

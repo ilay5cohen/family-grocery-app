@@ -1,15 +1,35 @@
+import { useState, useRef, useEffect } from 'react'
+import {
+  ChevronDown,
+  Check,
+  Plus,
+  FileSpreadsheet,
+  BarChart3,
+  BookOpen,
+} from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories'
 import type { Category } from '../types'
 import { triggerHaptic } from '../utils/haptics'
 
 export type StatusFilter = 'all' | 'pending' | 'bought' | 'mine'
 
-const STATUS_TABS: { id: StatusFilter; label: string }[] = [
+const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
   { id: 'all', label: 'הכל' },
   { id: 'pending', label: 'לביצוע' },
   { id: 'bought', label: 'נקנה' },
   { id: 'mine', label: 'שלי' },
 ]
+
+interface FilterBarProps {
+  status: StatusFilter
+  onStatusChange: (s: StatusFilter) => void
+  category: Category | 'all'
+  onCategoryChange: (c: Category | 'all') => void
+  onOpenPriceComparison?: () => void
+  onOpenProductLibrary?: () => void
+  onOpenManualAdd?: () => void
+  onOpenFileImport?: () => void
+}
 
 export function FilterBar({
   status,
@@ -18,112 +38,230 @@ export function FilterBar({
   onCategoryChange,
   onOpenPriceComparison,
   onOpenProductLibrary,
-}: {
-  status: StatusFilter
-  onStatusChange: (s: StatusFilter) => void
-  category: Category | 'all'
-  onCategoryChange: (c: Category | 'all') => void
-  onOpenPriceComparison?: () => void
-  onOpenProductLibrary?: () => void
-}) {
+  onOpenManualAdd,
+  onOpenFileImport,
+}: FilterBarProps) {
+  const [isStatusOpen, setIsStatusOpen] = useState(false)
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
+
+  const statusRef = useRef<HTMLDivElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (statusRef.current && !statusRef.current.contains(event.target as Node)) {
+        setIsStatusOpen(false)
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const currentStatusLabel =
+    STATUS_OPTIONS.find((s) => s.id === status)?.label ?? 'הכל'
+
+  const currentCategoryLabel =
+    category === 'all' ? 'כל הקטגוריות' : CATEGORIES[category]?.label ?? 'קטגוריה'
+
   return (
-    <div className="sticky top-[57px] z-20 bg-[#faf9f6]/90 backdrop-blur-xl py-2 -mx-3 px-3 sm:-mx-6 sm:px-6 space-y-2 transition-all">
-      {/* Top Row: Status Tabs + Quick Action Tools */}
-      <div className="flex items-center justify-between gap-2 overflow-x-auto pb-0.5">
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 shrink-0">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                triggerHaptic(15)
-                onStatusChange(tab.id)
-              }}
-              className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all select-none active:scale-95 ${
-                status === tab.id
-                  ? 'bg-stone-900 text-white shadow-apple-subtle'
-                  : 'border border-black/[0.04] bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900 shadow-2xs'
+    <div className="sticky top-[57px] z-20 -mx-3 px-3 sm:-mx-6 sm:px-6 py-2 bg-[#faf9f6]/95 backdrop-blur-xl transition-all border-b border-black/[0.03]">
+      {/* Unified Compact Filter & Tools Row */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        {/* 1. STATUS DROPDOWN (חלון נפתח סטטוס) */}
+        <div ref={statusRef} className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              setIsStatusOpen((prev) => !prev)
+              setIsCategoryOpen(false)
+            }}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold select-none transition-all active:scale-95 shadow-button-depth ${
+              status !== 'all'
+                ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
+                : 'border-stone-200/90 bg-white text-stone-700 hover:border-stone-300 hover:text-stone-900'
+            }`}
+            title="סינון לפי סטטוס"
+          >
+            <span>{currentStatusLabel}</span>
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                isStatusOpen ? 'rotate-180' : ''
               }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            />
+          </button>
+
+          {/* Status Dropdown Menu */}
+          {isStatusOpen && (
+            <div className="absolute top-full start-0 mt-1.5 z-50 w-36 overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-1 shadow-apple-float animate-dropdown-pop">
+              {STATUS_OPTIONS.map((opt) => {
+                const isSelected = status === opt.id
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(15)
+                      onStatusChange(opt.id)
+                      setIsStatusOpen(false)
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-[#4f46e5]/10 text-[#4f46e5] font-bold'
+                        : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Quick Tool Pills */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {onOpenPriceComparison && (
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic(15)
-                onOpenPriceComparison()
-              }}
-              title="השוואת מחירי רשתות סופרמרקטים בישראל"
-              className="flex items-center gap-1 rounded-xl border border-stone-200/80 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition active:scale-95 shadow-2xs"
-            >
-              <span className="hidden sm:inline">השוואת מחירים</span>
-              <span className="sm:hidden">השוואה</span>
-            </button>
-          )}
+        {/* 2. CATEGORY DROPDOWN (חלון נפתח קטגוריות) */}
+        <div ref={categoryRef} className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              setIsCategoryOpen((prev) => !prev)
+              setIsStatusOpen(false)
+            }}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold select-none transition-all active:scale-95 shadow-button-depth ${
+              category !== 'all'
+                ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
+                : 'border-stone-200/90 bg-white text-stone-700 hover:border-stone-300 hover:text-stone-900'
+            }`}
+            title="סינון לפי קטגוריה"
+          >
+            <span className="truncate max-w-[110px]">{currentCategoryLabel}</span>
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                isCategoryOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
 
-          {onOpenProductLibrary && (
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic(15)
-                onOpenProductLibrary()
-              }}
-              title="ספריית קטלוג מוצרים ישראליים"
-              className="flex items-center gap-1 rounded-xl border border-stone-200/80 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition active:scale-95 shadow-2xs"
-            >
-              <span className="hidden sm:inline">קטלוג מוצרים</span>
-              <span className="sm:hidden">קטלוג</span>
-            </button>
+          {/* Category Dropdown Menu */}
+          {isCategoryOpen && (
+            <div className="absolute top-full start-0 mt-1.5 z-50 w-52 max-h-64 overflow-y-auto rounded-2xl border border-black/[0.06] bg-white p-1.5 shadow-apple-float animate-dropdown-pop">
+              {/* Option: All */}
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(15)
+                  onCategoryChange('all')
+                  setIsCategoryOpen(false)
+                }}
+                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
+                  category === 'all'
+                    ? 'bg-[#4f46e5]/10 text-[#4f46e5] font-bold'
+                    : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900'
+                }`}
+              >
+                <span>כל הקטגוריות</span>
+                {category === 'all' && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+              </button>
+
+              <div className="my-1 h-px bg-stone-100" />
+
+              {/* Individual Categories */}
+              {CATEGORY_ORDER.map((c) => {
+                const meta = CATEGORIES[c]
+                const isSelected = category === c
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(15)
+                      onCategoryChange(c)
+                      setIsCategoryOpen(false)
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-[#4f46e5]/10 text-[#4f46e5] font-bold'
+                        : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900'
+                    }`}
+                  >
+                    <span className="truncate">{meta.label}</span>
+                    {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+                  </button>
+                )
+              })}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Subtle Separator */}
-      <div className="h-px bg-stone-200/50 my-0.5" />
+        {/* Separator */}
+        <div className="h-5 w-px bg-stone-200/80 mx-0.5 shrink-0" />
 
-      {/* Categories Chips Row */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        <button
-          onClick={() => {
-            triggerHaptic(15)
-            onCategoryChange('all')
-          }}
-          className={`shrink-0 rounded-xl border px-3 py-1 text-[11px] font-medium transition-all select-none active:scale-95 ${
-            category === 'all'
-              ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
-              : 'border-stone-200/80 bg-white text-stone-600 hover:text-stone-900'
-          }`}
-        >
-          הכל
-        </button>
+        {/* 3. QUICK ACTIONS IN SAME ROW: הוספה ידנית, ייבוא, השוואה, קטלוג */}
+        {onOpenManualAdd && (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              onOpenManualAdd()
+            }}
+            className="shrink-0 flex items-center gap-1 rounded-xl border border-stone-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:border-[#4f46e5]/40 hover:text-[#4f46e5] transition active:scale-95 shadow-button-depth"
+            title="הוספה ידנית של פריט"
+          >
+            <Plus className="h-3.5 w-3.5 text-[#4f46e5]" />
+            <span>הוספה ידנית</span>
+          </button>
+        )}
 
-        {CATEGORY_ORDER.map((c) => {
-          const meta = CATEGORIES[c]
-          const isSelected = category === c
+        {onOpenFileImport && (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              onOpenFileImport()
+            }}
+            className="shrink-0 flex items-center gap-1 rounded-xl border border-stone-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:border-[#4f46e5]/40 hover:text-[#4f46e5] transition active:scale-95 shadow-button-depth"
+            title="ייבוא רשימה מקובץ Excel או PDF"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+            <span>ייבוא מקובץ</span>
+          </button>
+        )}
 
-          return (
-            <button
-              key={c}
-              onClick={() => {
-                triggerHaptic(15)
-                onCategoryChange(isSelected ? 'all' : c)
-              }}
-              className={`shrink-0 flex items-center rounded-xl border px-2.5 py-1 text-[11px] font-medium transition-all select-none active:scale-95 ${
-                isSelected
-                  ? 'border-stone-900 bg-stone-900 text-white shadow-2xs'
-                  : 'border-stone-200/80 bg-white text-stone-600 hover:text-stone-900 hover:border-stone-300'
-              }`}
-            >
-              <span>{meta.label}</span>
-            </button>
-          )
-        })}
+        {onOpenPriceComparison && (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              onOpenPriceComparison()
+            }}
+            className="shrink-0 flex items-center gap-1 rounded-xl border border-stone-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:border-[#4f46e5]/40 hover:text-[#4f46e5] transition active:scale-95 shadow-button-depth"
+            title="השוואת מחירי רשתות סופרמרקטים"
+          >
+            <BarChart3 className="h-3.5 w-3.5 text-amber-600" />
+            <span>השוואת מחירים</span>
+          </button>
+        )}
+
+        {onOpenProductLibrary && (
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15)
+              onOpenProductLibrary()
+            }}
+            className="shrink-0 flex items-center gap-1 rounded-xl border border-stone-200/90 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:border-[#4f46e5]/40 hover:text-[#4f46e5] transition active:scale-95 shadow-button-depth"
+            title="קטלוג מוצרים ישראליים"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-blue-600" />
+            <span>קטלוג מוצרים</span>
+          </button>
+        )}
       </div>
     </div>
   )

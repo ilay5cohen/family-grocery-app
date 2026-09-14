@@ -35,9 +35,9 @@ export function NavigationTabs({
   return (
     <nav
       aria-label="ניווט ראשי"
-      className="fixed bottom-0 inset-x-0 z-40 border-t border-black/[0.04] bg-white/80 backdrop-blur-xl pb-safe shadow-[0_-1px_4px_rgba(0,0,0,0.02)] transition-all"
+      className="fixed bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-40"
     >
-      <div className="mx-auto flex max-w-md items-center justify-around px-2 py-1.5">
+      <div className="flex items-center justify-around rounded-full border border-black/[0.06] bg-white/90 p-1.5 shadow-apple-float backdrop-blur-2xl transition-all">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -45,29 +45,30 @@ export function NavigationTabs({
             <button
               key={tab.id}
               onClick={() => handleSelect(tab.id)}
-              className={`relative flex flex-col items-center justify-center gap-1 px-4 py-1.5 rounded-2xl transition-all select-none min-w-[72px] ${
-                isActive ? 'text-stone-900' : 'text-stone-400 hover:text-stone-700'
+              className={`relative flex items-center justify-center gap-2 px-4 py-2 rounded-full transition-all select-none active:scale-95 ${
+                isActive
+                  ? 'bg-[#4f46e5] text-white shadow-indigo-depth font-bold'
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100/70 font-medium'
               }`}
             >
-              {/* Active indicator pill */}
-              {isActive && (
-                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-stone-900" />
-              )}
-              <div
-                className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${
-                  isActive ? 'bg-stone-100 text-stone-900' : ''
-                }`}
-              >
-                <Icon className={`h-4.5 w-4.5 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'}`} />
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-900 px-1 text-[9px] font-semibold text-white">
-                    {tab.badge > 99 ? '99+' : tab.badge}
+              <div className="relative flex items-center justify-center">
+                <Icon className={`h-4 w-4 stroke-[2.2] ${isActive ? 'text-white' : 'text-stone-500'}`} />
+
+                {/* Badge for items count */}
+                {typeof tab.badge === 'number' && tab.badge > 0 && (
+                  <span
+                    className={`absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${
+                      isActive
+                        ? 'bg-white text-[#4f46e5]'
+                        : 'bg-[#4f46e5] text-white'
+                    }`}
+                  >
+                    {tab.badge}
                   </span>
                 )}
               </div>
-              <span className={`text-[11px] ${isActive ? 'font-semibold text-stone-900' : 'font-normal text-stone-400'}`}>
-                {tab.shortLabel}
-              </span>
+
+              <span className="text-xs">{tab.shortLabel}</span>
             </button>
           )
         })}
