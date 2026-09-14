@@ -1,14 +1,14 @@
 // Service Worker for "הסל שלנו" PWA
-const CACHE_NAME = 'hasal-shelanu-v2'
+const CACHE_NAME = 'hasal-shelanu-v3'
 
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/favicon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/apple-touch-icon.png',
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './favicon.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
 ]
 
 self.addEventListener('install', (event) => {
@@ -16,8 +16,6 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) =>
-        // Cached one by one on purpose: with addAll(), a single missing asset
-        // fails the whole install and the service worker never activates.
         Promise.all(PRECACHE_ASSETS.map((asset) => cache.add(asset).catch(() => undefined)))
       )
       .then(() => self.skipWaiting())
@@ -42,10 +40,8 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return
 
-  // Don't intercept analytics, cross-origin APIs or dev server websocket
   const url = new URL(event.request.url)
   if (url.protocol.startsWith('ws') || url.pathname.includes('/@vite')) {
     return
@@ -54,27 +50,29 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Cache successful local GET responses
         if (
           networkResponse &&
           networkResponse.status === 200 &&
-          event.request.url.startsWith(self.location.origin)
+          networkResponse.type === 'basic'
         ) {
-          const responseClone = networkResponse.clone()
+          const responseToCache = networkResponse.clone()
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone)
+            cache.put(event.request, responseToCache).catch(() => {})
           })
         }
         return networkResponse
       })
-      .catch(() => {
-        // If offline, attempt cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse
-          // If HTML navigation, return root
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html')
-          }
+      .catch(async () => {
+        const cached = await caches.match(event.request)
+        if (cached) return cached
+
+        if (event.request.headers.get('accept')?.includes('text/html')) {
+          return (await caches.match('./index.html')) || (await caches.match('./'))
+        }
+
+        return new Response('Network error occurred', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' },
         })
       })
   )
