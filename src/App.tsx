@@ -289,7 +289,7 @@ function FamilyApp({
 
         {/* TAB 1: CART (רשימת הקניות הראשית - Content First) */}
         {activeTab === 'cart' && (
-          <main className="space-y-3 animate-float-in">
+          <main className="space-y-3 animate-fade-in">
             {/* ROW 1: 3/4 Stats Card + 1/4 Round Search button (expands smoothly) */}
             <StatsSearchRow
               stats={store.stats}
@@ -326,7 +326,7 @@ function FamilyApp({
 
         {/* TAB 2: STAPLES (מוצרים קבועים) */}
         {activeTab === 'staples' && (
-          <main className="animate-float-in">
+          <main className="animate-fade-in">
             <StaplesTab
               currentItems={store.items}
               onAdd={(items) => store.addItems(items, memberId)}
@@ -336,7 +336,7 @@ function FamilyApp({
 
         {/* TAB 3: FAMILY & EXPENSES (המשפחה והוצאות) */}
         {activeTab === 'family' && (
-          <main className="animate-float-in">
+          <main className="animate-fade-in">
             <FamilyTab
               familyCode={store.family.code}
               members={store.members}

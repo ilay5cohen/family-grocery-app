@@ -34,7 +34,7 @@ export function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-black/[0.04] bg-white/85 shadow-[0_1px_4px_rgba(0,0,0,0.02)] backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-20 border-b border-black/[0.04] bg-white/85 shadow-[0_1px_4px_rgba(0,0,0,0.02)] backdrop-blur-xl transition-all">
       <div className="mx-auto flex max-w-2xl items-center justify-between px-3.5 py-2.5 sm:px-6 sm:py-3">
         {/* Right side (RTL Start): User Menu */}
         <div className="flex items-center gap-2">

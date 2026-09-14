@@ -35,7 +35,7 @@ export function NavigationTabs({
   return (
     <nav
       aria-label="ניווט ראשי"
-      className="fixed bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-40"
+      className="fixed bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-20"
     >
       <div className="flex items-center justify-around rounded-full border border-black/[0.06] bg-white/90 p-1.5 shadow-apple-float backdrop-blur-2xl transition-all">
         {tabs.map((tab) => {

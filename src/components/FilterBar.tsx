@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import {
   ChevronDown,
   Check,
@@ -71,19 +70,16 @@ export function FilterBar({
   return (
     <div className={`py-1 transition-all ${isStatusOpen || isCategoryOpen ? 'relative z-50' : 'relative z-20'}`}>
       {/* Soft overlay when a dropdown is open to ensure clean click-outside across entire screen */}
-      {(isStatusOpen || isCategoryOpen) &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            onClick={() => {
-              setIsStatusOpen(false)
-              setIsCategoryOpen(false)
-            }}
-            className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px] animate-fade-in"
-            aria-hidden="true"
-          />,
-          document.body
-        )}
+      {(isStatusOpen || isCategoryOpen) && (
+        <div
+          onClick={() => {
+            setIsStatusOpen(false)
+            setIsCategoryOpen(false)
+          }}
+          className="fixed inset-0 z-30 bg-black/15 backdrop-blur-[1px] animate-fade-in"
+          aria-hidden="true"
+        />
+      )}
 
       {/* Ultra-compact slim bar with UNCLIPPED dropdown buttons */}
       <div className="flex items-center gap-1.5 py-0.5 px-0.5">

@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import {
   X,
   Loader2,
@@ -138,25 +137,22 @@ export function StatsSearchRow({
   }
 
   return (
-    <div className={isSearching || isStatsExpanded ? 'relative z-50' : 'relative'}>
+    <div className={isSearching || isStatsExpanded ? 'relative z-40' : 'relative'}>
       {/* 1. SOFT FULL-SCREEN BACKDROP DIM (When Search or Stats is Open) */}
-      {(isSearching || isStatsExpanded) &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            onClick={() => {
-              if (isSearching) handleCloseSearch()
-              if (isStatsExpanded) setIsStatsExpanded(false)
-            }}
-            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 animate-fade-in"
-            aria-hidden="true"
-          />,
-          document.body
-        )}
+      {(isSearching || isStatsExpanded) && (
+        <div
+          onClick={() => {
+            if (isSearching) handleCloseSearch()
+            if (isStatsExpanded) setIsStatsExpanded(false)
+          }}
+          className="fixed inset-0 z-30 bg-black/25 backdrop-blur-[1.5px] transition-opacity duration-300 animate-fade-in"
+          aria-hidden="true"
+        />
+      )}
 
       {/* 2. SEARCH MODE: Smooth Full-Width Spotlight Bar */}
       {isSearching ? (
-        <div className="relative z-40 animate-expand-search rounded-3xl border border-[#4f46e5]/40 bg-white/98 p-2 shadow-apple-float ring-4 ring-[#4f46e5]/10 space-y-2">
+        <div className="relative z-40 animate-expand-search rounded-3xl border border-[#4f46e5]/40 bg-white p-2 shadow-apple-float ring-4 ring-[#4f46e5]/10 space-y-2">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#4f46e5] text-white shadow-indigo-depth">
               <SpotlightIcon className="h-4 w-4" />
@@ -288,7 +284,7 @@ export function StatsSearchRow({
         </div>
       ) : (
         /* 3. NORMAL ROW: 3/4 STATS CARD + 1/4 CIRCULAR SEARCH BUTTON */
-        <div className="relative z-30 space-y-2">
+        <div className={`space-y-2 ${isStatsExpanded ? 'relative z-40' : 'relative z-10'}`}>
           <div className="flex items-center gap-2 sm:gap-3">
             {/* 3/4 Width: Clickable Stats Card (Opens DOWNWARDS) */}
             <div
