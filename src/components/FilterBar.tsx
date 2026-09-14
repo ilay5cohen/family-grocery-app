@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ChevronDown,
   Check,
@@ -68,153 +69,160 @@ export function FilterBar({
     category === 'all' ? 'כל הקטגוריות' : CATEGORIES[category]?.label ?? 'קטגוריה'
 
   return (
-    <div className="relative z-20 py-1 transition-all">
-      {/* Soft overlay when a dropdown is open to ensure clean click-outside */}
-      {(isStatusOpen || isCategoryOpen) && (
-        <div
-          onClick={() => {
-            setIsStatusOpen(false)
-            setIsCategoryOpen(false)
-          }}
-          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[1px] animate-fade-in"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Ultra-compact slim bar (שורה מוקטנת שלא תופסת מקום) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
-        {/* 1. STATUS DROPDOWN (חלון נפתח סטטוס) */}
-        <div ref={statusRef} className="relative shrink-0">
-          <button
-            type="button"
+    <div className={`py-1 transition-all ${isStatusOpen || isCategoryOpen ? 'relative z-50' : 'relative z-20'}`}>
+      {/* Soft overlay when a dropdown is open to ensure clean click-outside across entire screen */}
+      {(isStatusOpen || isCategoryOpen) &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
             onClick={() => {
-              triggerHaptic(15)
-              setIsStatusOpen((prev) => !prev)
+              setIsStatusOpen(false)
               setIsCategoryOpen(false)
             }}
-            className={`flex items-center gap-1 h-7 rounded-xl border px-2.5 text-[11px] font-bold select-none transition-all active:scale-95 shadow-button-depth ${
-              status !== 'all'
-                ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
-                : 'border-stone-200/80 bg-white text-stone-700 hover:border-stone-300'
-            }`}
-            title="סינון סטטוס"
-          >
-            <span>{currentStatusLabel}</span>
-            <ChevronDown
-              className={`h-3 w-3 transition-transform duration-200 ${
-                isStatusOpen ? 'rotate-180' : ''
+            className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px] animate-fade-in"
+            aria-hidden="true"
+          />,
+          document.body
+        )}
+
+      {/* Ultra-compact slim bar with UNCLIPPED dropdown buttons */}
+      <div className="flex items-center gap-1.5 py-0.5 px-0.5">
+        {/* 1 & 2. UNCLIPPED PRIMARY DROPDOWNS (סטטוס וקטגוריה) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* STATUS DROPDOWN */}
+          <div ref={statusRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(15)
+                setIsStatusOpen((prev) => !prev)
+                setIsCategoryOpen(false)
+              }}
+              className={`flex items-center gap-1 h-7 rounded-xl border px-2.5 text-[11px] font-bold select-none transition-all active:scale-95 shadow-button-depth ${
+                status !== 'all'
+                  ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
+                  : 'border-stone-200/80 bg-white text-stone-700 hover:border-stone-300'
               }`}
-            />
-          </button>
-
-          {/* Floating Status Menu (Floats over list without clipping) */}
-          {isStatusOpen && (
-            <div className="absolute top-full start-0 mt-1.5 z-50 w-36 overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-1.5 shadow-apple-float animate-dropdown-pop">
-              {STATUS_OPTIONS.map((opt) => {
-                const isSelected = status === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic(15)
-                      onStatusChange(opt.id)
-                      setIsStatusOpen(false)
-                    }}
-                    className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                      isSelected
-                        ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* 2. CATEGORY DROPDOWN (חלון נפתח קטגוריות - צף מעל הרשימה) */}
-        <div ref={categoryRef} className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              triggerHaptic(15)
-              setIsCategoryOpen((prev) => !prev)
-              setIsStatusOpen(false)
-            }}
-            className={`flex items-center gap-1 h-7 rounded-xl border px-2.5 text-[11px] font-bold select-none transition-all active:scale-95 shadow-button-depth ${
-              category !== 'all'
-                ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
-                : 'border-stone-200/80 bg-white text-stone-700 hover:border-stone-300'
-            }`}
-            title="סינון קטגוריה"
-          >
-            <span className="truncate max-w-[95px]">{currentCategoryLabel}</span>
-            <ChevronDown
-              className={`h-3 w-3 transition-transform duration-200 ${
-                isCategoryOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {/* Floating Category Menu (Floats over list with scroll without clipping) */}
-          {isCategoryOpen && (
-            <div className="absolute top-full start-0 mt-1.5 z-50 w-52 max-h-72 overflow-y-auto rounded-2xl border border-black/[0.06] bg-white p-1.5 shadow-apple-float animate-dropdown-pop">
-              {/* Option: All */}
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic(15)
-                  onCategoryChange('all')
-                  setIsCategoryOpen(false)
-                }}
-                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${
-                  category === 'all'
-                    ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
-                    : 'text-stone-700 hover:bg-stone-50'
+              title="סינון לפי סטטוס פריט"
+            >
+              <span>{currentStatusLabel}</span>
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-200 ${
+                  isStatusOpen ? 'rotate-180' : ''
                 }`}
-              >
-                <span>כל הקטגוריות</span>
-                {category === 'all' && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
-              </button>
+              />
+            </button>
 
-              <div className="my-1 h-px bg-stone-100" />
+            {/* Floating Status Menu */}
+            {isStatusOpen && (
+              <div className="absolute top-full start-0 mt-1.5 z-50 w-36 overflow-hidden rounded-2xl border border-black/[0.08] bg-white p-1.5 shadow-apple-float animate-dropdown-pop">
+                {STATUS_OPTIONS.map((opt) => {
+                  const isSelected = status === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic(15)
+                        onStatusChange(opt.id)
+                        setIsStatusOpen(false)
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                        isSelected
+                          ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
+                          : 'text-stone-700 hover:bg-stone-50'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
-              {/* Individual Categories */}
-              {CATEGORY_ORDER.map((c) => {
-                const meta = CATEGORIES[c]
-                const isSelected = category === c
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic(15)
-                      onCategoryChange(c)
-                      setIsCategoryOpen(false)
-                    }}
-                    className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                      isSelected
-                        ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
-                        : 'text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <span className="truncate">{meta.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+          {/* CATEGORY DROPDOWN */}
+          <div ref={categoryRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(15)
+                setIsCategoryOpen((prev) => !prev)
+                setIsStatusOpen(false)
+              }}
+              className={`flex items-center gap-1 h-7 rounded-xl border px-2.5 text-[11px] font-bold select-none transition-all active:scale-95 shadow-button-depth ${
+                category !== 'all'
+                  ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-indigo-depth'
+                  : 'border-stone-200/80 bg-white text-stone-700 hover:border-stone-300'
+              }`}
+              title="סינון לפי קטגוריה"
+            >
+              <span className="truncate max-w-[95px]">{currentCategoryLabel}</span>
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-200 ${
+                  isCategoryOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Floating Category Menu */}
+            {isCategoryOpen && (
+              <div className="absolute top-full start-0 mt-1.5 z-50 w-52 max-h-72 overflow-y-auto rounded-2xl border border-black/[0.08] bg-white p-1.5 shadow-apple-float animate-dropdown-pop">
+                {/* Option: All */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(15)
+                    onCategoryChange('all')
+                    setIsCategoryOpen(false)
+                  }}
+                  className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${
+                    category === 'all'
+                      ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
+                      : 'text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <span>כל הקטגוריות</span>
+                  {category === 'all' && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+                </button>
+
+                <div className="my-1 h-px bg-stone-100" />
+
+                {/* Individual Categories */}
+                {CATEGORY_ORDER.map((c) => {
+                  const meta = CATEGORIES[c]
+                  const isSelected = category === c
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic(15)
+                        onCategoryChange(c)
+                        setIsCategoryOpen(false)
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                        isSelected
+                          ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
+                          : 'text-stone-700 hover:bg-stone-50'
+                      }`}
+                    >
+                      <span className="truncate">{meta.label}</span>
+                      {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Subtle Separator */}
         <div className="h-4 w-px bg-stone-200/80 mx-0.5 shrink-0" />
 
-        {/* 3. COMPACT ACTION TOOLS (הוספה ידנית, ייבוא, השוואה, קטלוג) */}
+        {/* 3. COMPACT ACTION TOOLS (הוספה ידנית, ייבוא, השוואה, קטלוג) - Scrollable if space is narrow */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0">
         {onOpenManualAdd && (
           <button
             type="button"
@@ -274,6 +282,7 @@ export function FilterBar({
             <span>קטלוג</span>
           </button>
         )}
+        </div>
       </div>
     </div>
   )

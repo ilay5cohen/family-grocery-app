@@ -43,7 +43,10 @@ export function ItemList({
 
   const grouped = CATEGORY_ORDER.map((cat) => ({
     category: cat,
-    items: items.filter((i) => i.category === cat),
+    items: items.filter((i) => {
+      const itemCat = i.category && i.category in CATEGORIES ? i.category : 'other'
+      return itemCat === cat
+    }),
   })).filter((g) => g.items.length > 0)
 
   return (

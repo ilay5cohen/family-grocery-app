@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Crown, LogOut, Copy, Check, Share2, HelpCircle, ShoppingCart } from 'lucide-react'
 import type { Member } from '../types'
 import { Avatar } from './Avatar'
@@ -42,34 +43,41 @@ export function UserMenu({
           triggerHaptic(15)
           setOpen((o) => !o)
         }}
-        className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 bg-white/90 py-1 ps-2.5 pe-1 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50"
+        className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-stone-200/80 bg-white/90 py-1 ps-2.5 pe-1 shadow-button-depth transition hover:border-[#4f46e5]/40 hover:bg-stone-50"
       >
-        {me.isAdmin && <Crown className="h-3.5 w-3.5 text-amber-600" />}
-        <span className="text-xs font-bold text-slate-800 hidden xs:inline">{me.name}</span>
+        {me.isAdmin && <Crown className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
+        <span className="text-xs font-bold text-stone-800 hidden xs:inline">{me.name}</span>
         <Avatar member={me} size="sm" />
       </button>
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute start-0 sm:end-0 z-50 mt-2 w-64 animate-float-in overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-3 shadow-xl">
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-[11px] font-semibold text-slate-500">קוד המשפחה</p>
+          {typeof document !== 'undefined' &&
+            createPortal(
+              <div
+                className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px] animate-fade-in"
+                onClick={() => setOpen(false)}
+              />,
+              document.body
+            )}
+          <div className="absolute start-0 sm:end-0 z-50 mt-2 w-64 animate-dropdown-pop overflow-hidden rounded-3xl border border-black/[0.06] bg-white p-3 shadow-apple-float">
+            <div className="rounded-2xl border border-stone-100 bg-stone-50/80 p-3">
+              <p className="text-[11px] font-semibold text-stone-500">קוד המשפחה</p>
               <div className="mt-1 flex items-center justify-between gap-2">
-                <span className="font-mono text-base font-black tracking-[0.2em] text-emerald-800">
+                <span className="font-mono text-base font-black tracking-[0.2em] text-[#4f46e5]">
                   {familyCode}
                 </span>
                 <button
                   onClick={copyCode}
-                  className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50"
+                  className="flex items-center gap-1 rounded-xl border border-stone-200/80 bg-white px-2.5 py-1 text-[11px] font-bold text-stone-700 shadow-button-depth transition hover:bg-stone-50 active:scale-95"
                 >
-                  {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                  {copied ? <Check className="h-3 w-3 text-emerald-600 stroke-[2.5]" /> : <Copy className="h-3 w-3" />}
                   <span>{copied ? 'הועתק' : 'העתק'}</span>
                 </button>
               </div>
             </div>
 
-            <div className="mt-2 space-y-1 border-t border-slate-100 pt-2">
+            <div className="mt-2 space-y-1 border-t border-stone-100 pt-2">
               {onOpenSupermarketMode && (
                 <button
                   onClick={() => {
@@ -77,9 +85,9 @@ export function UserMenu({
                     onOpenSupermarketMode()
                     setOpen(false)
                   }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-emerald-800 transition hover:bg-emerald-50"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 transition hover:bg-[#4f46e5]/10 hover:text-[#4f46e5]"
                 >
-                  <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                  <ShoppingCart className="h-4 w-4 text-[#4f46e5]" />
                   <span>מצב סופרמרקט מלא</span>
                 </button>
               )}
@@ -105,9 +113,9 @@ export function UserMenu({
                     onHelp()
                     setOpen(false)
                   }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-stone-700 transition hover:bg-stone-100"
                 >
-                  <HelpCircle className="h-4 w-4 text-slate-500" />
+                  <HelpCircle className="h-4 w-4 text-stone-500" />
                   <span>עזרה וסיור מודרך</span>
                 </button>
               )}
@@ -119,9 +127,9 @@ export function UserMenu({
                     onOpenAdmin()
                     setOpen(false)
                   }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-amber-800 transition hover:bg-amber-50"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-50"
                 >
-                  <Crown className="h-4 w-4 text-amber-600" />
+                  <Crown className="h-4 w-4 text-amber-500 fill-amber-500" />
                   <span>ניהול המשפחה והקוד</span>
                 </button>
               )}
@@ -132,7 +140,7 @@ export function UserMenu({
                   onLogout()
                   setOpen(false)
                 }}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-50"
               >
                 <LogOut className="h-4 w-4" />
                 <span>התנתקות</span>

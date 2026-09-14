@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   X,
   Loader2,
@@ -36,24 +37,15 @@ function SpotlightIcon({ className = 'h-4 w-4' }: { className?: string }) {
       className={className}
       viewBox="0 0 24 24"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <circle
-        cx="11"
-        cy="11"
-        r="6.5"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M16 16L21 21"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      {/* Subtle inner sparkle glint */}
-      <circle cx="9" cy="9" r="1" fill="currentColor" opacity="0.6" />
+      <circle cx="11" cy="11" r="6.5" strokeWidth="2.2" />
+      <path d="M16 16L21 21" strokeWidth="2.4" />
+      {/* Sleek lens reflection arc */}
+      <path d="M8.5 8.5a3.5 3.5 0 0 1 5 0" strokeWidth="1.6" opacity="0.6" />
     </svg>
   )
 }
@@ -146,18 +138,21 @@ export function StatsSearchRow({
   }
 
   return (
-    <div className="relative">
+    <div className={isSearching || isStatsExpanded ? 'relative z-50' : 'relative'}>
       {/* 1. SOFT FULL-SCREEN BACKDROP DIM (When Search or Stats is Open) */}
-      {(isSearching || isStatsExpanded) && (
-        <div
-          onClick={() => {
-            if (isSearching) handleCloseSearch()
-            if (isStatsExpanded) setIsStatsExpanded(false)
-          }}
-          className="fixed inset-0 z-30 bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 animate-fade-in"
-          aria-hidden="true"
-        />
-      )}
+      {(isSearching || isStatsExpanded) &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            onClick={() => {
+              if (isSearching) handleCloseSearch()
+              if (isStatsExpanded) setIsStatsExpanded(false)
+            }}
+            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 animate-fade-in"
+            aria-hidden="true"
+          />,
+          document.body
+        )}
 
       {/* 2. SEARCH MODE: Smooth Full-Width Spotlight Bar */}
       {isSearching ? (
